@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meme_card_game/src/features/auth/presentation/cubit/authentication_cubit.dart';
+import 'package:meme_card_game/src/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:meme_card_game/src/routing/middleware_guard_wrapper.dart';
 
 import '../features/auth/presentation/screens/auth_screen.dart';
@@ -8,6 +9,7 @@ import '../features/auth/presentation/screens/error_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 
+import '../features/profile/presentation/screens/profile_view.dart';
 import './routes_constants.dart' as routes_constants;
 import './middleware_guards.dart' as middleware_guards;
 
@@ -62,6 +64,11 @@ final router = GoRouter(
           child: const HomeScreen(),
         );
       },
+    ),
+    GoRoute(
+      name: routes_constants.editProfile,
+      path: routes_constants.editProfilePath,
+      builder: (context, goRouterState) => const EditProfileScreen(),
     ),
     GoRoute(
       name: routes_constants.error,

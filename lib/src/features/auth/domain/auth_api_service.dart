@@ -1,17 +1,24 @@
 import 'dart:async';
+import 'dart:io' as io;
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../models/supabase_exception.dart';
-import '../data/current_user_model.dart';
-import '../presentation/cubit/authentication_cubit.dart'
-    as authentication_cubit;
+import '../data/current_user.dart';
+
+import '../../../constants/supabase_constants.dart' as supabase_constants;
+import '../utils/generate_image_path.dart';
+
+// import 'package:mime/mime.dart';
 
 class AuthApiService {
   static final _supabase = Supabase.instance;
+  static final storage = _supabase.client.storage;
 
   static Future<CurrentUser?> signIn(String email, String password) async {
+    // todo: when user doesn't exist
     try {
       final result = await _supabase.client.auth.signInWithPassword(
         email: email,
@@ -28,6 +35,8 @@ class AuthApiService {
           .eq('id', result.user!.id)
           .single() as Map<String, dynamic>;
 
+      print("signIn - userRaw : $userRaw");
+
       final currentUser = CurrentUser.fromMap(userRaw);
       return currentUser;
     } catch (e) {
@@ -42,6 +51,8 @@ class AuthApiService {
     String login,
     String email,
     String password,
+    String? userColor,
+    Uint8List? generatedUserAvatarBinary,
   ) async {
     try {
       Map<String, dynamic> paramsCheckUser = {
@@ -83,9 +94,33 @@ class AuthApiService {
         "email": email,
         "id": createdUser?.id,
         "createdAt": createdUser?.createdAt,
+        "color": userColor,
+        "isImageSvg": false,
+        "imageUrl": null,
       };
 
       await _supabase.client.from("users").insert(userParams);
+
+      if (generatedUserAvatarBinary != null) {
+        // ? info: because uploadAvatarToStorage can not to upload a file
+        final imageUrl = await uploadAvatarToStorage(
+          createdUser!.id,
+          generatedUserAvatarBinary,
+          true,
+        );
+
+        Map<String, dynamic> updatedParams = {
+          "isImageSvg": true,
+          "imageUrl": imageUrl,
+        };
+
+        await _supabase.client
+            .from("users")
+            .update(
+              updatedParams,
+            )
+            .eq("id", createdUser.id);
+      }
 
       final userRaw = await _supabase.client
           .from('users')
@@ -94,6 +129,7 @@ class AuthApiService {
           .single() as Map<String, dynamic>;
 
       final currentUser = CurrentUser.fromMap(userRaw);
+
       return currentUser;
     } on SupabaseException catch (e) {
       if (kDebugMode) {
@@ -102,7 +138,43 @@ class AuthApiService {
       rethrow;
     } catch (e) {
       if (kDebugMode) {
-        print("AuthService - signUp - e: $e");
+        print("AuthService - signUp - e: ${e}");
+      }
+      rethrow;
+    }
+  }
+
+  static Future<String?> uploadAvatarToStorage(
+    String userId,
+    Uint8List avatarBinary, [
+    isFileSvg = false,
+  ]) async {
+    try {
+      final bucket = storage.from(supabase_constants.appBucket);
+
+      late final String filePath;
+      if (isFileSvg) {
+        filePath = supabase_constants.baseUserAvatarFileName + ".svg";
+      } else {
+        // todo: check it
+        filePath = supabase_constants.baseUserAvatarFileName + ".jpg";
+      }
+
+      final imagePath = generateImagePath(
+        rawFilePath: filePath,
+        fileName: supabase_constants.baseUserAvatarFileName,
+        inDirectoryName: '${supabase_constants.userAvatarDirectory}/$userId',
+      );
+
+      final uploadedImagePath =
+          await bucket.uploadBinary(imagePath, avatarBinary);
+
+      final uploadedImageUrl = bucket.getPublicUrl(uploadedImagePath);
+
+      return uploadedImageUrl;
+    } catch (e) {
+      if (kDebugMode) {
+        print("AuthService - uploadAvatarToStorage - e: $e");
       }
       rethrow;
     }
@@ -139,7 +211,7 @@ class AuthApiService {
       return currentUser;
     } catch (e) {
       if (kDebugMode) {
-        print("AuthService - checkIfLoginExists - e: $e");
+        print("AuthService - getCurrentUser - e: $e");
       }
       rethrow;
     }

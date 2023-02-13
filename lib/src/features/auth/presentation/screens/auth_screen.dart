@@ -71,8 +71,8 @@ class _AuthScreenState extends State<AuthScreen> {
       await authCubit.signUp(_loginText!, _emailText!, _passwordText!);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unexpected error'),
+        SnackBar(
+          content: Text(e.toString()),
         ),
       );
     }
