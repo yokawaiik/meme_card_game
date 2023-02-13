@@ -1,6 +1,4 @@
-import 'dart:html';
 import 'dart:ui';
-import 'package:http/http.dart' as http;
 import 'package:meme_card_game/src/extensions/color_extension.dart';
 import '../../../constants/app_constants.dart' as app_constants;
 
@@ -9,9 +7,8 @@ class CurrentUser {
   late String login;
   late String? email;
   late Color? color;
-
+  late Color? backgroundColor;
   String? imageUrl;
-  late bool isAvatartSvg;
 
   CurrentUser({
     required this.id,
@@ -19,7 +16,6 @@ class CurrentUser {
     required this.email,
     required this.imageUrl,
     required this.color,
-    this.isAvatartSvg = false,
   });
 
   CurrentUser.fromMap(Map<String, dynamic> userRaw) {
@@ -28,7 +24,8 @@ class CurrentUser {
     email = userRaw['email'];
     color = ColorExtension.fromHex(
         userRaw['color'] ?? app_constants.baseColorInHex);
+    backgroundColor = ColorExtension.fromHex(
+        userRaw['backgroundColor'] ?? app_constants.baseColorInHex);
     imageUrl = userRaw['imageUrl'];
-    isAvatartSvg = userRaw['isImageSvg'] ?? false;
   }
 }

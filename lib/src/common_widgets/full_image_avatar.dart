@@ -1,77 +1,63 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class FullImageAvatar extends StatelessWidget {
   final Color? emptyImageContainerColor;
+  final Color? avatarForegroundColor;
+  final Color? avatarBackgroundColor;
   final Size? size;
-  Uint8List? imageFileBytes;
   String? imageUrl;
-  bool? isImageSvg;
 
   FullImageAvatar({
     super.key,
     required this.imageUrl,
-    this.imageFileBytes,
     this.emptyImageContainerColor,
+    this.avatarForegroundColor,
+    this.avatarBackgroundColor,
     this.size,
-    this.isImageSvg = false,
   });
 
   FullImageAvatar.fromImageUrl({
     super.key,
     required this.imageUrl,
     this.emptyImageContainerColor,
+    this.avatarForegroundColor,
+    this.avatarBackgroundColor,
     this.size,
-    this.isImageSvg = false,
-  });
-
-  FullImageAvatar.fromSvgBytes({
-    super.key,
-    required this.imageFileBytes,
-    this.emptyImageContainerColor,
-    this.size,
-    this.isImageSvg = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final relevantSize = size ?? MediaQuery.of(context).size;
     final colorScheme = Theme.of(context).colorScheme;
 
-    final relevantSize = size ?? MediaQuery.of(context).size;
-
-    print("imageUrl : $imageUrl");
-    print("isImageSvg : $isImageSvg");
+    final setAvatarForegroundColor =
+        avatarForegroundColor ?? colorScheme.onPrimaryContainer;
+    final setAvatarBackgroundColor =
+        avatarBackgroundColor ?? colorScheme.primaryContainer;
+    final setEmptyImageContainerColor =
+        emptyImageContainerColor ?? colorScheme.secondaryContainer;
 
     if (imageUrl != null) {
-      if (isImageSvg == false) {
-        return Image.network(
-          imageUrl!,
-          width: double.infinity,
-          height: relevantSize.height / 3,
-        );
-      } else {
-        return Center(
-          // TODO ERROR : correct error. doesnt show svg network
-          child: SvgPicture.network(
-            imageUrl!,
-            width: double.infinity,
-            height: relevantSize.height / 3,
-          ),
-        );
-      }
-    } else {
-      return Container(
-        color: emptyImageContainerColor,
+      return Image.network(
+        imageUrl!,
         width: double.infinity,
         height: relevantSize.height / 3,
-        child: CircleAvatar(
-          backgroundColor: colorScheme.primaryContainer,
-          radius: 50,
-          child: Icon(
-            Icons.camera_alt,
-            size: 150,
-            color: colorScheme.onPrimaryContainer,
+      );
+    } else {
+      return Container(
+        color: setEmptyImageContainerColor,
+        width: double.infinity,
+        height: relevantSize.height / 3,
+        child: Center(
+          child: CircleAvatar(
+            backgroundColor: setAvatarBackgroundColor,
+            radius: 90,
+            child: Icon(
+              Icons.camera_alt,
+              size: 100,
+              color: setAvatarForegroundColor,
+            ),
           ),
         ),
       );

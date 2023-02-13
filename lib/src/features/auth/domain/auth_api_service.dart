@@ -47,13 +47,8 @@ class AuthApiService {
     }
   }
 
-  static Future<CurrentUser?> signUp(
-    String login,
-    String email,
-    String password,
-    String? userColor,
-    Uint8List? generatedUserAvatarBinary,
-  ) async {
+  static Future<CurrentUser?> signUp(String login, String email,
+      String password, String? userColor, String? userBackgroundColor) async {
     try {
       Map<String, dynamic> paramsCheckUser = {
         "in_login": login,
@@ -95,32 +90,31 @@ class AuthApiService {
         "id": createdUser?.id,
         "createdAt": createdUser?.createdAt,
         "color": userColor,
-        "isImageSvg": false,
+        "backgroundColor": userBackgroundColor,
         "imageUrl": null,
       };
 
       await _supabase.client.from("users").insert(userParams);
 
-      if (generatedUserAvatarBinary != null) {
-        // ? info: because uploadAvatarToStorage can not to upload a file
-        final imageUrl = await uploadAvatarToStorage(
-          createdUser!.id,
-          generatedUserAvatarBinary,
-          true,
-        );
+      // if (generatedUserAvatarBinary != null) {
+      //   // ? info: because uploadAvatarToStorage can not to upload a file
+      //   final imageUrl = await uploadAvatarToStorage(
+      //     createdUser!.id,
+      //     generatedUserAvatarBinary,
+      //   );
 
-        Map<String, dynamic> updatedParams = {
-          "isImageSvg": true,
-          "imageUrl": imageUrl,
-        };
+      //   Map<String, dynamic> updatedParams = {
+      //     "isImageSvg": true,
+      //     "imageUrl": imageUrl,
+      //   };
 
-        await _supabase.client
-            .from("users")
-            .update(
-              updatedParams,
-            )
-            .eq("id", createdUser.id);
-      }
+      //   await _supabase.client
+      //       .from("users")
+      //       .update(
+      //         updatedParams,
+      //       )
+      //       .eq("id", createdUser.id);
+      // }
 
       final userRaw = await _supabase.client
           .from('users')
@@ -146,22 +140,13 @@ class AuthApiService {
 
   static Future<String?> uploadAvatarToStorage(
     String userId,
-    Uint8List avatarBinary, [
-    isFileSvg = false,
-  ]) async {
+    Uint8List avatarBinary,
+  ) async {
     try {
       final bucket = storage.from(supabase_constants.appBucket);
 
-      late final String filePath;
-      if (isFileSvg) {
-        filePath = supabase_constants.baseUserAvatarFileName + ".svg";
-      } else {
-        // todo: check it
-        filePath = supabase_constants.baseUserAvatarFileName + ".jpg";
-      }
-
       final imagePath = generateImagePath(
-        rawFilePath: filePath,
+        rawFilePath: supabase_constants.baseUserAvatarFileName,
         fileName: supabase_constants.baseUserAvatarFileName,
         inDirectoryName: '${supabase_constants.userAvatarDirectory}/$userId',
       );

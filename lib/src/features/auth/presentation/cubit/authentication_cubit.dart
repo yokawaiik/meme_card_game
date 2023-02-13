@@ -6,8 +6,6 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:meme_card_game/src/extensions/color_extension.dart';
 import 'package:meme_card_game/src/features/auth/data/current_user.dart';
-import 'package:meme_card_game/src/features/auth/domain/avatar_generator_api_service.dart';
-import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/auth_api_service.dart';
@@ -24,8 +22,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   late StreamSubscription _onAuthStateChange;
 
   AuthenticationCubit() : super(AuthenticationInitialState()) {
-    print('AuthCubit - start');
-
     final _supabase = Supabase.instance;
 
     _restoreSession(); // attempt to restores session
@@ -117,15 +113,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
       final userColor = ColorExtension.generateColor().toHex();
 
-      final generatedUserAvatarBinary =
-          await AvatarGeneratorApiService.generateRandomAvatarBinary();
+      final userBackgroundColor = ColorExtension.generateColor().toHex();
 
       _currentUser = await AuthApiService.signUp(
         login,
         email,
         password,
         userColor,
-        generatedUserAvatarBinary,
+        userBackgroundColor,
       );
 
       emit(AuthenticatedState());
