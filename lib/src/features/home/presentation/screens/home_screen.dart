@@ -44,44 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // _openProfile(BuildContext context) {
-  //   context.goNamed(routes_constants.profile);
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(actions: [
-      //   PopupMenuButton(
-      //     icon: const Icon(Icons.more_horiz),
-      //     itemBuilder: (context) {
-      //       return [
-      //         PopupMenuItem(
-      //           child: const ListTile(
-      //             leading: Icon(Icons.person_4),
-      //             title: Text("Profile"),
-      //           ),
-      //           onTap: () => _openProfile(context),
-      //         ),
-      //         PopupMenuItem(
-      //           child: const ListTile(
-      //             leading: Icon(Icons.logout),
-      //             title: Text("Log out"),
-      //           ),
-      //           onTap: () => _logOut(context),
-      //         ),
-      //       ];
-      //     },
-      //   )
-      // ]),
-      // body: Column(
-      //   mainAxisAlignment: MainAxisAlignment.center,
-      //   children: [
-      //     Center(
-      //       child: Text('Home screen'),
-      //     )
-      //   ],
-      // ),
       body: screens[currentPageIndex],
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {

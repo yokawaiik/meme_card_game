@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meme_card_game/src/features/auth/presentation/cubit/authentication_cubit.dart';
 
+import '../../../../routing/routes_constants.dart' as routes_constants;
+
 class SelectGameModeView extends StatelessWidget {
   const SelectGameModeView({super.key});
 
@@ -15,7 +17,7 @@ class SelectGameModeView extends StatelessWidget {
           FilledButton.tonalIcon(
             icon: Icon(Icons.add),
             label: Text("Create new game"),
-            onPressed: _createNewGame,
+            onPressed: () => _createNewGame(context),
             style: FilledButton.styleFrom(
               minimumSize: Size(
                 160,
@@ -29,7 +31,7 @@ class SelectGameModeView extends StatelessWidget {
           FilledButton.icon(
             icon: Icon(Icons.handshake),
             label: Text("Join game"),
-            onPressed: _joinGame,
+            onPressed: () => _joinGame(context),
             style: FilledButton.styleFrom(
               minimumSize: Size(
                 100,
@@ -42,7 +44,11 @@ class SelectGameModeView extends StatelessWidget {
     );
   }
 
-  void _createNewGame() async {}
+  void _createNewGame(BuildContext context) async {
+    context.pushNamed(routes_constants.game);
+  }
 
-  void _joinGame() async {}
+  void _joinGame(BuildContext context) async {
+    context.pushNamed(routes_constants.joinGame);
+  }
 }

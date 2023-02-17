@@ -24,7 +24,7 @@ class DefaultTextField extends StatelessWidget {
   DefaultTextField({
     this.controller,
     this.initialValue,
-    required this.onChanged,
+    this.onChanged,
     this.labelText,
     this.obscureText = false,
     this.prefixIcon,

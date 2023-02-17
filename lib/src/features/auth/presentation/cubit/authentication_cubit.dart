@@ -5,10 +5,10 @@ import 'dart:ui';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:meme_card_game/src/extensions/color_extension.dart';
-import 'package:meme_card_game/src/features/auth/data/current_user.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../domain/auth_api_service.dart';
+import '../../application/auth_api_service.dart';
+import '../../domain/current_user.dart';
 
 part 'authentication_state.dart';
 

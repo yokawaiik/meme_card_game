@@ -5,7 +5,7 @@ import '../../../../common_widgets/default_text_field.dart';
 import '../../../../common_widgets/password_text_field.dart';
 import '../../../../common_widgets/rounded_button.dart';
 import '../../../../models/supabase_exception.dart';
-import '../../domain/auth_api_service.dart';
+import '../../application/auth_api_service.dart';
 import '../cubit/authentication_cubit.dart';
 
 import '../../utils/auth_validators.dart' as auth_validators;

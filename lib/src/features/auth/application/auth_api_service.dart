@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../models/supabase_exception.dart';
-import '../data/current_user.dart';
+import '../domain/current_user.dart';
 
 import '../../../constants/supabase_constants.dart' as supabase_constants;
 import '../utils/generate_image_path.dart';
