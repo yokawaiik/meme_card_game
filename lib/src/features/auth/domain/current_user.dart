@@ -28,4 +28,15 @@ class CurrentUser {
         userRaw['backgroundColor'] ?? app_constants.baseColorInHex);
     imageUrl = userRaw['imageUrl'];
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      "id": id,
+      "login": login,
+      "email": email,
+      "color": color?.toHex(),
+      "backgroundColor": backgroundColor?.toHex(),
+      "imageUrl": imageUrl,
+    };
+  }
 }

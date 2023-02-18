@@ -1,6 +1,4 @@
-enum KindOfException {
-  unknown,
-}
+enum KindOfException { unknown, joinError }
 
 class RealtimeException implements Exception {
   String? title;

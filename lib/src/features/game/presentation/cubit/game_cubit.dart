@@ -1,15 +1,18 @@
-import 'dart:developer';
-
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:meme_card_game/src/features/auth/presentation/cubit/authentication_cubit.dart';
 import 'package:meme_card_game/src/features/game/application/game_api_service.dart';
+import 'package:meme_card_game/src/features/game/domain/player.dart';
 import 'package:meme_card_game/src/features/game/domain/room.dart';
 import 'package:meme_card_game/src/features/game/utils/generate_random_situation.dart';
 import 'package:meme_card_game/src/models/realtime_exception.dart';
-import 'package:meta/meta.dart';
 import 'package:nanoid/nanoid.dart' as nanoid;
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../../auth/domain/current_user.dart';
+import '../../domain/enums/presence_object_type.dart';
+
+import 'package:collection/collection.dart';
 
 part 'game_state.dart';
 
@@ -24,10 +27,11 @@ class GameCubit extends Cubit<GameState> {
 
   Room? get room => _room;
 
+  CurrentUser? get currentUser => authenticationCubit.currentUser;
+
   Future<void> createGame(String roomName) async {
     try {
       final roomId = nanoid.nanoid();
-      print('roomId : $roomId');
 
       final channel = await GameApiService.createRoom(roomName, roomId);
 
@@ -39,7 +43,9 @@ class GameCubit extends Cubit<GameState> {
 
       _setRoomChannel(channel!);
 
-      print(channel.presence.state.toString());
+      if (kDebugMode) {
+        print("GameCubit - createGame - _room : $_room");
+      }
     } catch (e) {
       if (kDebugMode) {
         print("GameCubit - createGame - e: $e");
@@ -48,55 +54,71 @@ class GameCubit extends Cubit<GameState> {
     }
   }
 
-  RealtimeChannel? throwCardEvent;
-  RealtimeChannel? syncEvent;
   void _setRoomChannel(RealtimeChannel channel) async {
     presenceChannel = channel;
+    // if (room == null) {
+    //   throw RealtimeException("Realtime error", "Room hasn't been crated.");
+    // }
 
-    throwCardEvent = presenceChannel!.on(
-      // RealtimeListenTypes.presence,
-      RealtimeListenTypes.broadcast,
-      ChannelFilter(event: 'throwCard'),
+    presenceChannel!.on(RealtimeListenTypes.presence,
+        ChannelFilter(event: 'sync'), (payload, [ref]) {});
+
+    presenceChannel!.on(
+      RealtimeListenTypes.presence,
+      ChannelFilter(event: 'join'),
       (payload, [ref]) {
-        log("payload: $payload");
-        log("ref: $ref");
-        log("presenceChannel!.joinRef: ${presenceChannel!.joinRef}");
-
-        log("presenceChannel!.presenceState().toString(): ${presenceChannel!.presenceState()}");
+        // ? info : listens join
+        // print("JOIN - : ${presenceChannel!..map((presences as Presence) {
+        //   presences as Presence;
+        //   return presences;
+        // })}");
+        print('JOIN - payload: ${payload}');
+        print(
+            'JOIN - presenceChannel!.presence.state.value: ${presenceChannel!.presence.state.values}');
       },
     );
+    presenceChannel!.on(
+      RealtimeListenTypes.broadcast,
+      ChannelFilter(event: 'game_lobby'),
+      (payload, [ref]) {
+        print('game_lobby - payload: $payload');
 
-    // presenceChannel!.on(
-    //   // RealtimeListenTypes.presence,
-    //   RealtimeListenTypes.broadcast,
-    //   ChannelFilter(event: 'throwCard'),
-    //   (payload, [ref]) {
-    //     log("payload: $payload");
-    //     log("ref: $ref");
-    //     log("presenceChannel!.joinRef: ${presenceChannel!.joinRef}");
+        final participantIds = List<String>.from(payload['participants']);
+        print('participantIds: ${participantIds}');
+      },
+    );
+    presenceChannel!.on(
+      RealtimeListenTypes.broadcast,
+      ChannelFilter(event: 'throw_card'),
+      (payload, [ref]) {
+        final payloadData = payload['throw_card'];
+        print('throw_card - payload: $payloadData');
+        final throwCard = List<String>.from(payload['throw_card']);
+        print('throw_card payload[throw_card] : ${throwCard}');
+      },
+    );
+    presenceChannel!.subscribe(
+      (status, [ref]) async {
+        if (status == 'SUBSCRIBED') {
+          await presenceChannel!.track(
+            room!.toMap(),
+          );
 
-    //     log("presenceChannel!.presenceState().toString(): ${presenceChannel!.presenceState()}");
-    //   },
-    // );
+          final newPlayer = Player(
+            id: currentUser!.id,
+            login: currentUser!.login,
+            isCurrentUser: true,
+            isCreator: currentUser!.id == room!.createdBy,
+            color: currentUser!.color,
+            backgroundColor: currentUser!.backgroundColor,
+          );
 
-    // presenceChannel!.presence.onJoin((key, currentPresences, newPresences) {
-    //   log("presenceChannel!.presence.key: " + key.toString());
-    //   log("presenceChannel!.presence.currentPresences: " +
-    //       currentPresences.toString());
-    //   log("presenceChannel!.presence.newPresences: " + newPresences.toString());
-    // });
-
-    // dont work
-    presenceChannel!.presence.onSync(() {
-      final state = presenceChannel!.presenceState();
-      print("presenceChannel!.presence.onSync: $state");
-    });
-
-    presenceChannel!.presence.channel
-        .subscribe((String value, [Object? object]) {
-      print('value: $value');
-      print('object: $object');
-    });
+          await presenceChannel!.track(
+            newPlayer.toMap(),
+          );
+        }
+      },
+    );
   }
 
   Future<void> throwCard() async {
@@ -121,13 +143,11 @@ class GameCubit extends Cubit<GameState> {
     print('testSendData');
     try {
       final currentRandomSituation = generateRandomSituation(100).toString();
-      // print('currentRandomSituation: $currentRandomSituation');
-      // print('testSendData 1');
 
       await presenceChannel!.presence.channel.send(
         type: RealtimeListenTypes.broadcast,
         // event: 'sync',
-        event: 'throwCard',
+        event: 'throw_card',
         payload: {
           // "user_id": _client.auth.currentUser,
           // "throwCard": cardId,
@@ -152,9 +172,53 @@ class GameCubit extends Cubit<GameState> {
 
   Future<void> joinRoom(String roomId) async {
     try {
-      // todo: implements
       final channel = await GameApiService.joinRoom(roomId);
-      _setRoomChannel(channel!);
+      presenceChannel = channel;
+
+      presenceChannel!.on(
+        RealtimeListenTypes.presence,
+        ChannelFilter(event: 'sync'),
+        (payload, [ref]) async {
+          final presences = presenceChannel!.presence.state.values.first;
+
+          // search for room
+          final foundPresenceWithRoom = presences.firstWhereOrNull((presence) =>
+              presence.payload['object_type'] == PresenceObjectType.room);
+
+          if (foundPresenceWithRoom != null) {
+            _room = Room.fromMap(foundPresenceWithRoom.payload);
+            print(_room);
+          } else {
+            await presenceChannel!.unsubscribe();
+            throw RealtimeException(
+              "Join error.",
+              "Room hasn't been found.",
+              KindOfException.joinError,
+            );
+          }
+        },
+      );
+
+      presenceChannel!.subscribe(
+        (status, [ref]) async {
+          if (status == 'SUBSCRIBED') {
+            final newPlayer = Player(
+              id: currentUser!.id,
+              login: currentUser!.login,
+              isCurrentUser: true,
+              isCreator: false,
+              color: currentUser!.color,
+              backgroundColor: currentUser!.backgroundColor,
+            );
+
+            await presenceChannel!.track(
+              newPlayer.toMap(),
+            );
+          }
+        },
+      );
+
+      // _setRoomChannel(channel!);
     } catch (e) {
       if (kDebugMode) {
         print("GameCubit - joinRoom - e: $e");
@@ -162,6 +226,12 @@ class GameCubit extends Cubit<GameState> {
       rethrow;
     }
   }
+
+  void _setEventHandlers(RealtimeChannel realtimeChannel) {}
+
+  void _createRoom() {}
+
+  void _joinRoom() {}
 
   Future<void> closeRoom() async {
     try {

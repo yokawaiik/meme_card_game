@@ -12,52 +12,12 @@ class GameApiService {
         roomId,
         opts: RealtimeChannelConfig(
           key: _client.auth.currentUser!.id,
-          ack: true,
           self: true,
         ),
       );
 
-      // channel.presence
-      // print('channel.presence: ${channel.presence}');
-
-      // print(
-      //     'channel.presenceState(): ${channel.presenceState()}');
-
-      // channel.presence.onJoin((key, currentPresences, newPresences) {});
-
-      // channel
-      //     .on(RealtimeListenTypes.presence, ChannelFilter(event: 'sync'),
-      //         (payload, [ref]) {
-      //   final onlineUsers = channel.presenceState();
-      //   print('onlineUsers : $onlineUsers');
-      //   // handle sync event
-      // });
-
-      // channel.subscribe();
-
-      // await channel.send(
-      //   type: RealtimeListenTypes.presence,
-      //   payload: {
-      //     "user_id": _client.auth.currentUser,
-      //     "points": 0,
-      //     "lastThrownCardId": 0,
-      //   },
-      // );
-
-      // print(
-      //     'channel.presence.state - ${channel.presence.state}');
-
       // todo: how to write data in the channel?
       // todo: how to react to the changes in the channel
-      // channel.on(
-      //   RealtimeListenTypes.presence,
-      //   ChannelFilter(event: 'sync'),
-      //   (payload, [ref]) {
-      //     print(payload);
-      //     print(channel.presenceState());
-
-      //   },
-      // );
 
       if (channel.isErrored) {
         throw RealtimeException(

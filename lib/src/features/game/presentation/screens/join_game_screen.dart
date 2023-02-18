@@ -82,14 +82,13 @@ class _JoinGameScreenState extends State<JoinGameScreen> {
     try {
       _formKey.currentState!.save();
       final validationResult = _formKey.currentState!.validate();
-      print('validationResult: $validationResult');
 
       if (!validationResult) return;
 
       final gameCubit = context.read<GameCubit>();
 
       await gameCubit.joinRoom(_titleRoomTextController.text);
-      // context.pushNamed(routes_constants.gameArea);
+      // context.pushNamed(routes_constants.gameLobby);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
