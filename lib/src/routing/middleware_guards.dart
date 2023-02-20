@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meme_card_game/src/features/game/presentation/cubit/game_cubit.dart';
 
 import '../features/auth/presentation/cubit/authentication_cubit.dart';
 import './routes_constants.dart' as routes_constants;
@@ -36,14 +37,15 @@ FutureOr<String?> guestRequired(
   return null;
 }
 
-// FutureOr<String?> routeExists(
-//   BuildContext context,
-//   GoRouterState goRouterState,
-// ) {
-//   if (goRouterState.error != null) {
-//     // todo: add screen with error 404
-//     return routes_constants.splash;
-//   }
+FutureOr<String?> gameRoomRequired(
+  BuildContext context,
+  GoRouterState goRouterState,
+) {
+  final gameCubit = context.read<GameCubit>();
 
-//   return null;
-// }
+  if (gameCubit.room == null) {
+    return routes_constants.homePath;
+  }
+
+  return null;
+}

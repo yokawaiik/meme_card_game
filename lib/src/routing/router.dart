@@ -72,19 +72,22 @@ final router = GoRouter(
         GoRoute(
           name: routes_constants.game,
           path: routes_constants.gameCreatePath,
-          builder: (context, goRouterState) => BlocProvider.value(
-            value: BlocProvider.of<GameCubit>(context),
-            child: GameCreateScreen(),
-          ),
-          routes: [],
+          // builder: (context, goRouterState) => BlocProvider.value(
+          //   value: BlocProvider.of<GameCubit>(context),
+          //   child: GameCreateScreen(),
+          // ),
+          // todo add guard:
+          builder: (context, goRouterState) => GameCreateScreen(),
         ),
         GoRoute(
           name: routes_constants.joinGame,
           path: routes_constants.joinGamePath,
-          builder: (context, goRouterState) => BlocProvider.value(
-            value: BlocProvider.of<GameCubit>(context),
-            child: JoinGameScreen(),
-          ),
+          // builder: (context, goRouterState) => BlocProvider.value(
+          //   value: BlocProvider.of<GameCubit>(context),
+          //   child: JoinGameScreen(),
+          // ),
+          // todo add guard:
+          builder: (context, goRouterState) => JoinGameScreen(),
         ),
         GoRoute(
           name: routes_constants.gameLobby,
@@ -93,6 +96,14 @@ final router = GoRouter(
           builder: (context, goRouterState) => BlocProvider.value(
             value: BlocProvider.of<GameCubit>(context),
             child: GameLobbyScreen(),
+          ),
+          redirect: (context, state) => middlewareGuardWrapper(
+            context,
+            state,
+            [
+              middleware_guards.authRequired,
+              middleware_guards.gameRoomRequired,
+            ],
           ),
         ),
       ],

@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:meme_card_game/src/models/realtime_exception.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:collection/collection.dart';
+
 class GameApiService {
   static final _client = Supabase.instance.client;
 
@@ -76,7 +78,7 @@ class GameApiService {
         roomId,
         RealtimeChannelConfig(
           key: _client.auth.currentUser!.id,
-          ack: true,
+          ack: false,
           self: true,
         ),
       );
@@ -84,7 +86,7 @@ class GameApiService {
       return channel;
     } catch (e) {
       if (kDebugMode) {
-        print("GameApiService - createRoom - e: $e");
+        print("GameApiService - joinRoom - e: $e");
         rethrow;
       }
     }

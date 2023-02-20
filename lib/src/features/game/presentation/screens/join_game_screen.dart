@@ -31,47 +31,90 @@ class _JoinGameScreenState extends State<JoinGameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Join room"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              DefaultTextField(
-                labelText: "Room's id",
-                controller: _titleRoomTextController,
-                validator: (value) => validators.baseFieldCheck(
-                  "Room's id",
-                  value,
-                  isRequired: true,
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FilledButton.tonalIcon(
-                    onPressed: () => _joinRoom(context),
-                    icon: const Icon(Icons.people),
-                    label: const Text(
-                      "Join room",
-                    ),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(
-                        100,
-                        46,
-                      ),
-                    ),
+    return BlocListener<GameCubit, GameState>(
+      listener: (ctx, state) {
+        if (state is JoinedRoomState) {
+          GoRouter.of(ctx).pushNamed(routes_constants.gameLobby);
+        } else if (state is CloseGameState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Attempt to join a non-existent room."),
+            ),
+          );
+        }
+      },
+      listenWhen: (previous, current) {
+        if (current is LoadingGameState || current is CloseGameState) {
+          return true;
+        }
+
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Join room"),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                DefaultTextField(
+                  labelText: "Room's id",
+                  controller: _titleRoomTextController,
+                  validator: (value) => validators.baseFieldCheck(
+                    "Room's id",
+                    value,
+                    isRequired: true,
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    BlocBuilder<GameCubit, GameState>(
+                      builder: (context, state) {
+                        final isLoadingGameState = state is LoadingGameState;
+
+                        // todo: need to handle it. redirect to lobby
+                        return Stack(
+                          children: [
+                            if (isLoadingGameState)
+                              const Positioned.fill(
+                                child: Align(
+                                    alignment: Alignment.center,
+                                    child: SizedBox(
+                                      height: 16,
+                                      width: 16,
+                                      child: CircularProgressIndicator(),
+                                    )),
+                              ),
+                            FilledButton.tonalIcon(
+                              onPressed: !isLoadingGameState
+                                  ? () => _joinRoom(context)
+                                  : null,
+                              icon: const Icon(Icons.people),
+                              label: const Text(
+                                "Join room",
+                              ),
+                              style: FilledButton.styleFrom(
+                                minimumSize: const Size(
+                                  100,
+                                  46,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -88,10 +131,9 @@ class _JoinGameScreenState extends State<JoinGameScreen> {
       final gameCubit = context.read<GameCubit>();
 
       await gameCubit.joinRoom(_titleRoomTextController.text);
-      // context.pushNamed(routes_constants.gameLobby);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Something went wrong'),
         ),
       );
