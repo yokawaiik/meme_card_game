@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meme_card_game/src/common_widgets/button_with_indicator.dart';
 import 'package:meme_card_game/src/features/game/presentation/cubit/game_cubit.dart';
 import 'package:flutter/services.dart';
 
@@ -17,7 +16,7 @@ class GameLobbyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    // uses only for initial values
+    // ? info uses only for initial values
     final gameCubit = context.read<GameCubit>();
     final room = gameCubit.room;
 
@@ -42,8 +41,12 @@ class GameLobbyScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Name: ${room.title}",
-                            style: textTheme.titleLarge),
+                        Text(
+                          "Name: ${room.title}",
+                          style: textTheme.titleLarge,
+                          softWrap: true,
+                          overflow: TextOverflow.fade,
+                        ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
@@ -54,7 +57,7 @@ class GameLobbyScreen extends StatelessWidget {
                             IconButton(
                               onPressed: () => _copyRoomId(context),
                               iconSize: 16,
-                              icon: Icon(
+                              icon: const Icon(
                                 Icons.copy_rounded,
                               ),
                             ),
@@ -64,26 +67,23 @@ class GameLobbyScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 BlocBuilder<GameCubit, GameState>(
                   buildWhen: (previous, current) {
-                    print('BlocBuilder - current : $current');
                     if (current is NewPlayerJoinedRoomState ||
-                        current is PlayerLeftRoomState) {
+                        current is PlayerLeftRoomState ||
+                        current is ConfirmedGameState ||
+                        current is SomePlayerConfirmedGameState) {
                       return true;
                     }
                     return false;
                   },
                   builder: (builderContext, state) {
                     final gameCubit = builderContext.read<GameCubit>();
-
-                    print(
-                        "GameLobbyScreen - players : ${gameCubit.room!.players}");
-
-                    final creator = gameCubit.room!.players!
-                        .firstWhereOrNull((player) => player.isCreator);
+                    // final creator = gameCubit.room!.players!
+                    //     .firstWhereOrNull((player) => player.isCreator);
 
                     final players = gameCubit.room!.players!;
 
@@ -93,7 +93,7 @@ class GameLobbyScreen extends StatelessWidget {
                         Text(
                           "Total players: ${gameCubit.room!.players!.length}",
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         ListView.builder(
                           shrinkWrap: true,
                           itemCount: players.length,
@@ -104,11 +104,16 @@ class GameLobbyScreen extends StatelessWidget {
                               key: Key(player.id),
                               padding: const EdgeInsets.symmetric(vertical: 5),
                               child: ListTile(
+                                // todo: add kick user
                                 onTap: () => _showPlayerProfile(context),
                                 leading: CircleAvatar(
                                   backgroundColor: player.backgroundColor,
                                   foregroundColor: player.color,
-                                  child: Icon(Icons.person_4),
+                                  child: const Icon(Icons.person_4),
+                                ),
+                                trailing: Checkbox(
+                                  value: player.isConfirm,
+                                  onChanged: null,
                                 ),
                                 title: Text(
                                   player.login,
@@ -123,18 +128,70 @@ class GameLobbyScreen extends StatelessWidget {
                     );
                   },
                 ),
-                SizedBox(
+                BlocBuilder<GameCubit, GameState>(
+                    buildWhen: (previous, current) {
+                  if (current is ConfirmedGameState ||
+                      // current is LoadingGameState
+                      current is ConfirmLoadingGameState) {
+                    return true;
+                  }
+                  return false;
+                }, builder: (context, state) {
+                  final isConfirmedGameState = state is ConfirmedGameState;
+                  final isConfirmLoadingGameState =
+                      state is ConfirmLoadingGameState;
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ButtonWithIndicator.tonal(
+                        isLoading: isConfirmLoadingGameState,
+                        onPressed: isConfirmedGameState
+                            ? null
+                            : () => _confirmParticipation(context),
+                        child: Text(
+                          isConfirmedGameState
+                              ? "Wait for others"
+                              : "Сonfirm participation",
+                        ),
+                      )
+                    ],
+                  );
+                }),
+                const SizedBox(
                   height: 20,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    FilledButton.tonal(
-                      onPressed: () => _startGame(context),
-                      child: Text("Start Game"),
-                    ),
-                  ],
-                ),
+                if (room.isCreatedByCurrentUser)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // todo: correct error
+                      BlocBuilder<GameCubit, GameState>(
+                        buildWhen: (previous, current) {
+                          if (current is SomePlayerConfirmedGameState ||
+                              current is ConfirmedGameState) {
+                            return true;
+                          }
+                          return false;
+                        },
+                        builder: (context, state) {
+                          final gameCubit = context.read<GameCubit>();
+                          final room = gameCubit.room!;
+
+                          return FilledButton.tonal(
+                            onPressed: room.isAllPlayersConfirm
+                                ? () => _startGame(context)
+                                : null,
+                            child: Text(
+                              room.isAllPlayersConfirm
+                                  ? "Start Game"
+                                  : "Waiting for the players confirmation",
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -143,17 +200,38 @@ class GameLobbyScreen extends StatelessWidget {
     );
   }
 
-  _startGame(BuildContext context) {}
+  _startGame(BuildContext context) async {
+    try {
+      final gameCubit = context.read<GameCubit>();
+
+      await gameCubit.startGame();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong"),
+        ),
+      );
+    }
+  }
 
   _copyRoomId(BuildContext context) async {
-    final gameCubit = context.read<GameCubit>();
+    late String snackBarTextContent;
+    try {
+      final gameCubit = context.read<GameCubit>();
 
-    final room = gameCubit.room!;
+      final room = gameCubit.room!;
 
-    await Clipboard.setData(ClipboardData(text: room.id));
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Copied to clipboard'),
-    ));
+      await Clipboard.setData(ClipboardData(text: room.id));
+      snackBarTextContent = 'Copied to clipboard';
+    } catch (e) {
+      snackBarTextContent = "Something went wrong.";
+    } finally {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(snackBarTextContent),
+        ),
+      );
+    }
   }
 
   Future<bool> _closeRoom(BuildContext context) async {
@@ -168,7 +246,7 @@ class GameLobbyScreen extends StatelessWidget {
         barrierDismissible: true,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Warning"),
+            title: const Text("Warning"),
             content: Text(
               isCreatedByCurrentUser
                   ? "Delete room and close it"
@@ -186,7 +264,7 @@ class GameLobbyScreen extends StatelessWidget {
                   context.pop();
                   answer = true;
                 },
-                child: Text(
+                child: const Text(
                   "Yes",
                 ),
               )
@@ -195,16 +273,30 @@ class GameLobbyScreen extends StatelessWidget {
         });
 
     if (answer) {
-      if (isCreatedByCurrentUser) {
-        gameCubit.deleteRoom();
-      } else {
-        gameCubit.leaveRoom();
-      }
+      await gameCubit.closeRoom();
     }
-    return answer;
+
+    // ? it's necessary because if return true and then use router will be exception
+    return false;
   }
 
-  _showPlayerProfile(BuildContext context) {
-    // todo: implements
+  _showPlayerProfile(BuildContext context) async {
+    // todo: implements _showPlayerProfile
+    try {} catch (e) {}
+  }
+
+  _confirmParticipation(BuildContext context) async {
+    try {
+      final gameCubit = context.read<GameCubit>();
+
+      // ? info: it may to add switch to true/false
+      await gameCubit.confirmParticipation(true);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong."),
+        ),
+      );
+    }
   }
 }

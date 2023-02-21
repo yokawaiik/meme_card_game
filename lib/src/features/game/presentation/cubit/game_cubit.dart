@@ -6,15 +6,19 @@ import 'package:meme_card_game/src/features/auth/presentation/cubit/authenticati
 import 'package:meme_card_game/src/features/game/application/game_api_service.dart';
 import 'package:meme_card_game/src/features/game/domain/models/player.dart';
 import 'package:meme_card_game/src/features/game/domain/models/room.dart';
+import 'package:meme_card_game/src/features/game/domain/models/room_configuration.dart';
 import 'package:meme_card_game/src/features/game/utils/generate_random_situation.dart';
 import 'package:meme_card_game/src/models/realtime_exception.dart';
 import 'package:nanoid/nanoid.dart' as nanoid;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../auth/domain/current_user.dart';
+import '../../domain/enums/game_status.dart';
 import '../../domain/enums/presence_object_type.dart';
 
 import 'package:collection/collection.dart';
+
+import '../../domain/models/player_confirmation.dart';
 
 part 'game_state.dart';
 
@@ -31,7 +35,8 @@ class GameCubit extends Cubit<GameState> {
 
   CurrentUser? get currentUser => authenticationCubit.currentUser;
 
-  Future<void> createGame(String roomName) async {
+  Future<void> createGame(
+      String roomName, RoomConfiguration roomConfiguration) async {
     try {
       emit(LoadingGameState());
 
@@ -45,15 +50,12 @@ class GameCubit extends Cubit<GameState> {
         title: roomName,
         createdBy: authenticationCubit.currentUser!.id,
         isCreatedByCurrentUser: true,
+        roomConfiguration: roomConfiguration,
       );
 
       _setEventHandlers(_gameChannel!);
       _joinRoom(_gameChannel!, true);
       emit(CreatedGameState());
-
-      if (kDebugMode) {
-        print("GameCubit - createGame - _room : $_room");
-      }
     } catch (e) {
       if (kDebugMode) {
         print("GameCubit - createGame - e: $e");
@@ -65,7 +67,6 @@ class GameCubit extends Cubit<GameState> {
   Future<void> joinRoom(String roomId) async {
     try {
       emit(LoadingGameState());
-      // todo: start load indicator
       final channel = await GameApiService.joinRoom(roomId);
       _gameChannel = channel;
 
@@ -87,6 +88,10 @@ class GameCubit extends Cubit<GameState> {
       (payload, [ref]) {
         print("------SYNC------");
         if (realtimeChannel.presence.state.isEmpty) return;
+
+        // if (_room != null && _room.isCreatedByCurrentUser) {
+
+        // }
       },
     );
 
@@ -94,7 +99,6 @@ class GameCubit extends Cubit<GameState> {
       RealtimeListenTypes.presence,
       ChannelFilter(event: 'join'),
       (payload, [ref]) {
-        print("---- JOIN ----");
         print("JOIN - payload : $payload");
 
         if (realtimeChannel.presence.state.isEmpty) return;
@@ -112,7 +116,9 @@ class GameCubit extends Cubit<GameState> {
 
           // ? info : user tried connect to non-existent channel
           if (foundPresenceWithCreator == null) {
-            deleteRoom(true);
+            emit(DeletedGameState());
+            _deleteRoom();
+            _leaveRoom();
           }
 
           final Map<String, dynamic>? roomMapData =
@@ -162,12 +168,14 @@ class GameCubit extends Cubit<GameState> {
           );
 
           _room!.addPlayer(joinedPlayer);
-          if (joinedPlayer.isCreator) {
+          if (currentUser!.id == joinedPlayer.id) {
             emit(JoinedRoomState());
           } else {
             emit(NewPlayerJoinedRoomState());
           }
         }
+
+        print('EVENT JOIN - _room : ${_room}');
       },
     );
 
@@ -186,23 +194,57 @@ class GameCubit extends Cubit<GameState> {
 
         if (foundPresenceWithLeftPlayer == null) return;
         final leftPlayer = Player.fromMap(
-            foundPresenceWithLeftPlayer.payload, currentUser!.id);
+          foundPresenceWithLeftPlayer.payload,
+          currentUser!.id,
+        );
 
         log("LEAVE - player left : $leftPlayer");
-        _room!.removePlayer(leftPlayer.id);
 
-        emit(PlayerLeftRoomState());
+        if (leftPlayer.isCreator) {
+          emit(DeletedGameState());
+          _deleteRoom();
+          _leaveRoom();
+        } else {
+          if (leftPlayer.id == currentUser!.id) {
+            emit(LeftRoomState());
+            _leaveRoom();
+          } else {
+            _room!.removePlayer(leftPlayer.id);
+            emit(PlayerLeftRoomState());
+          }
+        }
       },
     );
 
     realtimeChannel.on(
       RealtimeListenTypes.broadcast,
-      ChannelFilter(event: 'game_lobby'),
+      ChannelFilter(event: 'confirm_game_start'),
       (payload, [ref]) {
-        print('game_lobby - payload: $payload');
+        log("EVENT BROADCAST - confirm_game_start");
 
-        // final participantIds = List<String>.from(payload['participants']);
-        // print('participantIds: ${participantIds}');
+        final playerConfirmation =
+            PlayerConfirmation.fromMap(payload["data_object"]);
+
+        room!.setConfirmation(playerConfirmation);
+
+        // todo: check who is confirm
+        if (playerConfirmation.playerId == currentUser!.id) {
+          emit(ConfirmedGameState());
+        } else {
+          emit(SomePlayerConfirmedGameState());
+        }
+      },
+    );
+
+    realtimeChannel.on(
+      RealtimeListenTypes.broadcast,
+      ChannelFilter(event: 'game_start'),
+      (payload, [ref]) {
+        log("EVENT BROADCAST - game_start");
+
+        room!.setStatus(GameStatus.started);
+
+        emit(StartedGameState());
       },
     );
 
@@ -242,49 +284,132 @@ class GameCubit extends Cubit<GameState> {
     );
   }
 
-  Future<void> deleteRoom([isNonExistRoom = false]) async {
-    try {
-      emit(LoadingGameState());
+  // Future<void> deleteRoom([isNonExistRoom = false]) async {
+  //   try {
+  //     emit(LoadingGameState());
 
-      // ? info : it need, because of room doesn't exist, memory does not contain it
-      final roomId = _gameChannel!.topic.replaceFirst("realtime:", "");
+  //     // ? info : it need, because of room doesn't exist, memory does not contain it
+  //     final roomId = _gameChannel!.topic.replaceFirst("realtime:", "");
 
-      await _gameChannel?.unsubscribe();
-      _gameChannel = null;
+  //     // ? info : can delete creator and if player tried to connect to non-exists roomF
+  //     if (isNonExistRoom ||
+  //         authenticationCubit.currentUser!.id == room!.createdBy) {
+  //       await GameApiService.removeRoom(roomId);
+  //     }
+  //     await _gameChannel?.unsubscribe();
+  //     _gameChannel = null;
 
-      // ? info : can delete creator and if player tried to connect to non-exists roomF
-      if (isNonExistRoom ||
-          authenticationCubit.currentUser!.id == room!.createdBy) {
-        await GameApiService.removeRoom(roomId);
-      }
+  //     _room = null;
+  //     // emit(DeletedGameState());
 
-      _room = null;
-      emit(CloseGameState());
-    } catch (e) {
-      if (kDebugMode) {
-        print("GameCubit - joinRoom - e: $e");
-      }
-      rethrow;
-    }
-  }
-
-  // _deleteChannel() {
-  //   _gameChannel.topic
+  //     emit(GameInitialState());
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print("GameCubit - deleteRoom - e: $e");
+  //     }
+  //     rethrow;
+  //   }
   // }
 
-  Future<void> leaveRoom() async {
+  // Future<void> leaveRoom() async {
+  //   try {
+  //     emit(LoadingGameState());
+  //     await _leaveRoom();
+  //     emit(DeletedGameState());
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print("GameCubit - leaveRoom - e: $e");
+  //     }
+  //     rethrow;
+  //   }
+  // }
+
+  Future<void> confirmParticipation(bool isConfirm) async {
     try {
-      emit(LoadingGameState());
-      await _leaveRoom();
-      emit(CloseGameState());
+      emit(ConfirmLoadingGameState());
+
+      // todo: implements
+      final payload = PlayerConfirmation(
+        currentUser!.id,
+        isConfirm,
+      ).toMap();
+
+      await _gameChannel!.send(
+        type: RealtimeListenTypes.broadcast,
+        event: "confirm_game_start",
+        payload: {
+          "data_object": payload,
+        },
+      );
     } catch (e) {
       if (kDebugMode) {
-        print("GameCubit - joinRoom - e: $e");
+        print("GameCubit - confirmParticipation - e: $e");
       }
       rethrow;
     }
   }
 
+  Future<void> startGame() async {
+    try {
+      emit(LoadingGameState());
+      await _gameChannel!.send(
+        type: RealtimeListenTypes.broadcast,
+        event: "game_start",
+        payload: {},
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print("GameCubit - confirmParticipation - e: $e");
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> closeRoom() async {
+    try {
+      // todo: implements
+      emit(LoadingGameState());
+
+      if (_room!.isCreatedByCurrentUser) {
+        emit(DeletedGameState());
+        await _deleteRoom();
+        await _leaveRoom();
+      } else {
+        emit(LeftRoomState());
+        await _leaveRoom();
+      }
+      emit(GameInitialState());
+    } catch (e) {
+      if (kDebugMode) {
+        print("GameCubit - closeRoom - e: $e");
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _deleteRoom() async {
+    try {
+      // todo: implements
+
+      // room - is non-existent
+      late final String roomId;
+      if (room == null) {
+        // ? info : it need, because of room doesn't exist, memory does not contain it
+        // ? info : parse name room by created chanel topic
+        roomId = _gameChannel!.topic.replaceFirst("realtime:", "");
+      } else {
+        roomId = _room!.id;
+      }
+      await GameApiService.removeRoom(roomId);
+    } catch (e) {
+      if (kDebugMode) {
+        print("GameCubit - _deleteRoom - e: $e");
+      }
+      rethrow;
+    }
+  }
+
+  /// _leaveRoom() - unsubscribe and delete all data
   Future<void> _leaveRoom() async {
     await _gameChannel?.unsubscribe();
     _gameChannel = null;

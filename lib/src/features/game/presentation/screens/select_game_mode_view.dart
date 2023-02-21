@@ -15,25 +15,25 @@ class SelectGameModeView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           FilledButton.tonalIcon(
-            icon: Icon(Icons.add),
-            label: Text("Create new game"),
+            icon: const Icon(Icons.add),
+            label: const Text("Create new game"),
             onPressed: () => _createNewGame(context),
             style: FilledButton.styleFrom(
-              minimumSize: Size(
+              minimumSize: const Size(
                 160,
                 46,
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
           FilledButton.icon(
-            icon: Icon(Icons.handshake),
-            label: Text("Join game"),
+            icon: const Icon(Icons.handshake),
+            label: const Text("Join game"),
             onPressed: () => _joinGame(context),
             style: FilledButton.styleFrom(
-              minimumSize: Size(
+              minimumSize: const Size(
                 100,
                 46,
               ),
@@ -45,7 +45,7 @@ class SelectGameModeView extends StatelessWidget {
   }
 
   void _createNewGame(BuildContext context) async {
-    context.pushNamed(routes_constants.game);
+    context.pushNamed(routes_constants.gameCreate);
   }
 
   void _joinGame(BuildContext context) async {

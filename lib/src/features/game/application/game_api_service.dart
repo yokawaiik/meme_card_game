@@ -10,6 +10,11 @@ class GameApiService {
   static Future<RealtimeChannel?> createRoom(
       String roomTitle, String roomId) async {
     try {
+      if (kDebugMode) {
+        print(
+            'GameApiService - createRoom - _client.realtime.getChannels() : ${_client.realtime.getChannels()}');
+      }
+
       final channel = _client.channel(
         roomId,
         opts: RealtimeChannelConfig(
@@ -17,9 +22,6 @@ class GameApiService {
           self: true,
         ),
       );
-
-      // todo: how to write data in the channel?
-      // todo: how to react to the changes in the channel
 
       if (channel.isErrored) {
         throw RealtimeException(
@@ -35,6 +37,7 @@ class GameApiService {
         rethrow;
       }
     }
+    return null;
   }
 
 // todo throwCard
@@ -90,5 +93,6 @@ class GameApiService {
         rethrow;
       }
     }
+    return null;
   }
 }

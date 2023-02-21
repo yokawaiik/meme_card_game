@@ -15,7 +15,15 @@ class NewPlayerJoinedRoomState extends GameState {}
 
 class PlayerLeftRoomState extends GameState {}
 
-class CloseGameState extends GameState {}
+class LeftRoomState extends GameState {}
+
+class DeletedGameState extends GameState {}
+
+class ConfirmLoadingGameState extends GameState {}
+
+class ConfirmedGameState extends GameState {}
+
+class SomePlayerConfirmedGameState extends GameState {}
 
 class StartedGameState extends GameState {}
 

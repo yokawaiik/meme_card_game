@@ -13,7 +13,7 @@ class Player {
   late final Color backgroundColor;
   late final bool isCurrentUser;
   late bool isCreator;
-
+  late bool isConfirm;
   late int? points;
 
   late Map<String, dynamic>? additionalInfo;
@@ -23,6 +23,7 @@ class Player {
     required this.login,
     required this.isCurrentUser,
     this.isCreator = false,
+    this.isConfirm = false,
     Color? color,
     Color? backgroundColor,
     this.points = 0,
@@ -41,10 +42,12 @@ class Player {
     login = data["login"];
     color =
         ColorExtension.fromHex(data["color"] ?? app_constants.baseColorInHex);
+
     backgroundColor = ColorExtension.fromHex(
         data["background_сolor"] ?? app_constants.baseBackgroundColorInHex);
     isCurrentUser = (id == currentUserId);
     isCreator = data["is_creator"] ?? false;
+    isConfirm = data["is_confirm"] ?? false;
 
     points = data["points"] ?? 0;
     additionalInfo = data["additional_info"];
@@ -56,8 +59,9 @@ class Player {
       "id": id,
       "login": login,
       "color": color.toHex(),
-      "background_color": backgroundColor.toHex(),
+      "background_сolor": backgroundColor.toHex(),
       "is_creator": isCreator,
+      "is_confirm": isConfirm,
       "points": points,
       "additional_info": additionalInfo,
     };

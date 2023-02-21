@@ -35,7 +35,7 @@ class _JoinGameScreenState extends State<JoinGameScreen> {
       listener: (ctx, state) {
         if (state is JoinedRoomState) {
           GoRouter.of(ctx).pushNamed(routes_constants.gameLobby);
-        } else if (state is CloseGameState) {
+        } else if (state is DeletedGameState) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("Attempt to join a non-existent room."),
@@ -44,7 +44,7 @@ class _JoinGameScreenState extends State<JoinGameScreen> {
         }
       },
       listenWhen: (previous, current) {
-        if (current is LoadingGameState || current is CloseGameState) {
+        if (current is LoadingGameState || current is DeletedGameState) {
           return true;
         }
 

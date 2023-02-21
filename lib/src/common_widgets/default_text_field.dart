@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class DefaultTextField extends StatelessWidget {
   String? labelText;
@@ -16,6 +17,7 @@ class DefaultTextField extends StatelessWidget {
   TextEditingController? controller;
 
   Iterable<String>? autofillHints;
+  List<TextInputFormatter>? inputFormatters;
 
   Icon? prefixIcon;
 
@@ -35,6 +37,7 @@ class DefaultTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.suffixIcon,
     this.autofillHints,
+    this.inputFormatters,
     Key? key,
   }) : super(key: key);
 
@@ -51,11 +54,13 @@ class DefaultTextField extends StatelessWidget {
       maxLines: obscureText ? 1 : maxLines,
       maxLength: maxLength,
       autofillHints: autofillHints,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
-          border: const OutlineInputBorder(),
-          labelText: labelText,
-          prefixIcon: prefixIcon,
-          suffixIcon: suffixIcon),
+        border: const OutlineInputBorder(),
+        labelText: labelText,
+        prefixIcon: prefixIcon,
+        suffixIcon: suffixIcon,
+      ),
     );
   }
 }

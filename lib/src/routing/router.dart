@@ -10,6 +10,7 @@ import 'package:meme_card_game/src/routing/middleware_guard_wrapper.dart';
 import '../features/auth/presentation/screens/auth_screen.dart';
 import '../features/auth/presentation/screens/error_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
+import '../features/game/presentation/screens/game_space_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/game/presentation/screens/join_game_screen.dart';
 
@@ -60,7 +61,7 @@ final router = GoRouter(
       path: routes_constants.homePath,
       builder: (context, goRouterState) {
         return BlocListener<AuthenticationCubit, AuthenticationState>(
-          listener: (context, state) {
+          listener: (ctx, state) {
             if (state is! AuthenticatedState) {
               context.pushReplacementNamed(routes_constants.auth);
             }
@@ -70,32 +71,77 @@ final router = GoRouter(
       },
       routes: [
         GoRoute(
-          name: routes_constants.game,
+          name: routes_constants.gameCreate,
           path: routes_constants.gameCreatePath,
           // builder: (context, goRouterState) => BlocProvider.value(
           //   value: BlocProvider.of<GameCubit>(context),
           //   child: GameCreateScreen(),
           // ),
           // todo add guard:
-          builder: (context, goRouterState) => GameCreateScreen(),
+          // todo: add listener here
+          builder: (context, goRouterState) => const GameCreateScreen(),
         ),
         GoRoute(
           name: routes_constants.joinGame,
           path: routes_constants.joinGamePath,
-          // builder: (context, goRouterState) => BlocProvider.value(
-          //   value: BlocProvider.of<GameCubit>(context),
-          //   child: JoinGameScreen(),
-          // ),
+
           // todo add guard:
-          builder: (context, goRouterState) => JoinGameScreen(),
+          // todo: add listener here
+
+          builder: (context, goRouterState) => const JoinGameScreen(),
         ),
         GoRoute(
           name: routes_constants.gameLobby,
           path: routes_constants.gameLobbyPath,
-          // todo add guard: user can't go here if channel wasn't connected
-          builder: (context, goRouterState) => BlocProvider.value(
-            value: BlocProvider.of<GameCubit>(context),
-            child: GameLobbyScreen(),
+          builder: (context, goRouterState) =>
+              BlocListener<GameCubit, GameState>(
+            listenWhen: (previous, current) {
+              if (current is StartedGameState ||
+                  current is DeletedGameState ||
+                  current is LeftRoomState) {
+                return true;
+              }
+              return false;
+            },
+            listener: (ctx, state) {
+              if (state is StartedGameState) {
+                GoRouter.of(context)
+                    .pushReplacementNamed(routes_constants.gameSpace);
+              } else if (state is DeletedGameState || state is LeftRoomState) {
+                GoRouter.of(context)
+                    .pushReplacementNamed(routes_constants.gameCreate);
+              }
+            },
+            child: const GameLobbyScreen(),
+          ),
+          redirect: (context, state) => middlewareGuardWrapper(
+            context,
+            state,
+            [
+              middleware_guards.authRequired,
+              // middleware_guards.gameRoomRequired,
+            ],
+          ),
+        ),
+        GoRoute(
+          name: routes_constants.gameSpace,
+          path: routes_constants.gameSpacePath,
+          builder: (context, goRouterState) =>
+              BlocListener<GameCubit, GameState>(
+            listenWhen: (previous, current) {
+              // todo: add finish screen
+              if (current is DeletedGameState) {
+                return true;
+              }
+              return false;
+            },
+            listener: (context, state) {
+              if (state is DeletedGameState) {
+                GoRouter.of(context)
+                    .pushReplacementNamed(routes_constants.gameCreate);
+              }
+            },
+            child: const GameSpaceScreen(),
           ),
           redirect: (context, state) => middlewareGuardWrapper(
             context,
