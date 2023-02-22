@@ -7,6 +7,7 @@ class DefaultTextField extends StatelessWidget {
   Function(String)? onChanged;
 
   bool obscureText;
+  bool readOnly;
   int? minLines;
   int? maxLines;
   int? maxLength;
@@ -38,6 +39,7 @@ class DefaultTextField extends StatelessWidget {
     this.suffixIcon,
     this.autofillHints,
     this.inputFormatters,
+    this.readOnly = false,
     Key? key,
   }) : super(key: key);
 
@@ -55,6 +57,7 @@ class DefaultTextField extends StatelessWidget {
       maxLength: maxLength,
       autofillHints: autofillHints,
       inputFormatters: inputFormatters,
+      readOnly: readOnly,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
         labelText: labelText,

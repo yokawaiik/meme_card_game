@@ -22,23 +22,27 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
 
   late bool _automaticSituationSelection;
 
-  /// [_timeToDecisionTextController.value] in seconds
-  late final TextEditingController _timeToDecisionTextController;
-
   /// [_timeToConfirmationTextController.value] in seconds
   late final TextEditingController _timeToConfirmationTextController;
 
-  /// [_timeToBreakTextController.value] in seconds
-  late final TextEditingController _timeToBreakTextController;
+  /// [_timeForChooseSituationTextController.value] in seconds
+  late final TextEditingController _timeForChooseSituationTextController;
+
+  /// [_timeForVoteForCardTextController.value] in seconds
+  late final TextEditingController _timeForVoteForCardTextController;
+
+  /// [_roundsCountTextController.value] in seconds
+  late final TextEditingController _roundsCountTextController;
 
   @override
   void initState() {
     _titleRoomTextController = TextEditingController();
     // ? info: options for room
     _automaticSituationSelection = true;
-    _timeToDecisionTextController = TextEditingController(text: "60");
+    _timeForChooseSituationTextController = TextEditingController(text: "30");
     _timeToConfirmationTextController = TextEditingController(text: "60");
-    _timeToBreakTextController = TextEditingController(text: "20");
+    _timeForVoteForCardTextController = TextEditingController(text: "20");
+    _roundsCountTextController = TextEditingController(text: "10");
     _formKey = GlobalKey<FormState>();
     super.initState();
   }
@@ -94,26 +98,7 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
                     const SizedBox(
                       height: 10,
                     ),
-                    DefaultTextField(
-                      labelText: "Time to desicion (seconds)",
-                      controller: _timeToDecisionTextController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (value) {
-                        if (value == "") {
-                          _timeToDecisionTextController.text += "10";
-                        }
-                      },
-                      validator: (value) => validators.onlyNumbers(
-                        "Time to desicion",
-                        int.parse("${value ?? 0}"),
-                        minValue: 10,
-                        maxValue: 180,
-                        isRequired: true,
-                      ),
-                    ),
+
                     const SizedBox(
                       height: 10,
                     ),
@@ -129,6 +114,7 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
                           _timeToConfirmationTextController.text += "10";
                         }
                       },
+                      readOnly: true,
                       validator: (value) => validators.onlyNumbers(
                         "Time to confirmation",
                         int.parse("${value ?? 0}"),
@@ -141,19 +127,68 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
                       height: 10,
                     ),
                     DefaultTextField(
-                      labelText: "Time to break (seconds)",
-                      controller: _timeToBreakTextController,
+                      labelText: "Time for choose situation (seconds)",
+                      controller: _timeForChooseSituationTextController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
                       ],
                       onChanged: (value) {
                         if (value == "") {
-                          _timeToBreakTextController.text += "10";
+                          _timeForChooseSituationTextController.text += "10";
                         }
                       },
+                      readOnly: true,
                       validator: (value) => validators.onlyNumbers(
-                        "Time to break",
+                        "Time for choose situation",
+                        int.parse("${value ?? 0}"),
+                        minValue: 10,
+                        maxValue: 180,
+                        isRequired: true,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    DefaultTextField(
+                      labelText: "Time for vote for card (seconds)",
+                      controller: _timeForVoteForCardTextController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      onChanged: (value) {
+                        if (value == "") {
+                          _timeForVoteForCardTextController.text += "10";
+                        }
+                      },
+                      readOnly: true,
+                      validator: (value) => validators.onlyNumbers(
+                        "Time for vote for card",
+                        int.parse("${value ?? 0}"),
+                        minValue: 10,
+                        maxValue: 180,
+                        isRequired: true,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    DefaultTextField(
+                      labelText: "Rounds count",
+                      controller: _roundsCountTextController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      onChanged: (value) {
+                        if (value == "") {
+                          _roundsCountTextController.text += "10";
+                        }
+                      },
+                      readOnly: true,
+                      validator: (value) => validators.onlyNumbers(
+                        "Rounds count",
                         int.parse("${value ?? 0}"),
                         minValue: 10,
                         maxValue: 180,
@@ -244,11 +279,14 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
 
       final roomConfiguration = RoomConfiguration(
         automaticSituationSelection: _automaticSituationSelection,
-        timeToDecision:
-            int.tryParse('${_timeToDecisionTextController.value}') ?? 60,
-        timeToConfirmation:
+        timeForConfirmation:
             int.tryParse('${_timeToConfirmationTextController.value}') ?? 60,
-        timeToBreak: int.tryParse('${_timeToBreakTextController.value}') ?? 20,
+        timeForChooseSituation:
+            int.tryParse('${_timeForChooseSituationTextController.value}') ??
+                20,
+        timeForVoteForCard:
+            int.tryParse('${_timeForVoteForCardTextController.value}') ?? 20,
+        roundsCount: int.tryParse('${_roundsCountTextController.value}') ?? 10,
       );
 
       final gameCubit = context.read<GameCubit>();

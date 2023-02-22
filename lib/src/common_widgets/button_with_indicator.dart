@@ -75,12 +75,6 @@ class ButtonWithIndicator extends StatelessWidget {
               ),
             ),
           ),
-
-        // FilledButton.tonal(
-        //   onPressed: onPressed,
-        //   style: style,
-        //   child: child,
-        // ),
         _buttonBuild(),
       ],
     );

@@ -4,6 +4,7 @@ import 'package:meme_card_game/src/extensions/color_extension.dart';
 import 'package:meme_card_game/src/features/game/domain/enums/presence_object_type.dart';
 
 import '../../../../constants/app_constants.dart' as app_constants;
+import 'card_choice.dart';
 
 class Player {
   // base parameters
@@ -11,12 +12,16 @@ class Player {
   late final String login;
   late final Color color;
   late final Color backgroundColor;
+
+  /// [isCurrentUser] only in player's memory
   late final bool isCurrentUser;
   late bool isCreator;
   late bool isConfirm;
   late int? points;
-
   late Map<String, dynamic>? additionalInfo;
+
+  /// [cardsChoiceHistory] only in player's memory
+  late List<CardChoice> cardsChoiceHistory;
 
   Player({
     required this.id,
@@ -28,10 +33,12 @@ class Player {
     Color? backgroundColor,
     this.points = 0,
     this.additionalInfo,
+    List<CardChoice>? cardsChoiceHistory,
   }) {
     this.color = color ?? ColorExtension.fromHex(app_constants.baseColorInHex);
     this.backgroundColor = backgroundColor ??
         ColorExtension.fromHex(app_constants.baseBackgroundColorInHex);
+    this.cardsChoiceHistory = cardsChoiceHistory ?? [];
   }
 
   Player.fromMap(
@@ -51,6 +58,13 @@ class Player {
 
     points = data["points"] ?? 0;
     additionalInfo = data["additional_info"];
+    // cardsChoiceHistory = data["cards_choice_history"]
+    //     ? (data["cards_choice_history"] as List)
+    //         .map((item) =>
+    //             CardChoice.fromMap(item as Map<String, dynamic>, currentUserId))
+    //         .toList()
+    //     : [];
+    cardsChoiceHistory = [];
   }
 
   Map<String, dynamic> toMap() {
@@ -64,6 +78,7 @@ class Player {
       "is_confirm": isConfirm,
       "points": points,
       "additional_info": additionalInfo,
+      // "cards_choice_history":
     };
   }
 

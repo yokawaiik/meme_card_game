@@ -1,9 +1,11 @@
 import 'package:meme_card_game/src/features/game/domain/enums/game_status.dart';
+import 'package:meme_card_game/src/features/game/domain/models/card_choice.dart';
 import 'package:meme_card_game/src/features/game/domain/models/player.dart';
 import 'package:meme_card_game/src/features/game/domain/models/player_confirmation.dart';
 import 'package:meme_card_game/src/features/game/domain/models/room_configuration.dart';
 
 import '../enums/presence_object_type.dart';
+import 'situation.dart';
 
 class Room {
   late final String id;
@@ -16,6 +18,11 @@ class Room {
   late GameStatus status;
 
   late RoomConfiguration roomConfiguration;
+
+  late int _currentRound = 0;
+  int get currentRound => _currentRound;
+
+  //  int currentRound;
 
   /// [isAllPlayersConfirmed] to start game
   bool get isAllPlayersConfirm {
@@ -95,5 +102,28 @@ class Room {
 
   void setStatus(GameStatus started) {
     status = started;
+  }
+
+  void addActiveSituation(
+    Situation situation,
+  ) {
+    // todo: add Active Situation
+  }
+
+  void addCard(
+    CardChoice cardChoice,
+  ) {
+    // todo: add card
+  }
+
+  void addVotingResult(
+    String situationId,
+    String userId,
+  ) {
+    // todo: add voting result by situation id
+  }
+
+  void nextRound() {
+    _currentRound++;
   }
 }

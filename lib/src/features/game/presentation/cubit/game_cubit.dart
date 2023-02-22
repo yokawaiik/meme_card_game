@@ -248,6 +248,43 @@ class GameCubit extends Cubit<GameState> {
       },
     );
 
+    // todo: choose_situation
+    // realtimeChannel.on(
+    //   RealtimeListenTypes.broadcast,
+    //   ChannelFilter(event: 'throw_card'),
+    //   (payload, [ref]) {
+    //     final payloadData = payload['throw_card'];
+    //     print('throw_card - payload: $payloadData');
+    //     final throwCard = List<String>.from(payload['throw_card']);
+    //     print('throw_card payload[throw_card] : ${throwCard}');
+    //   },
+    // );
+
+    // todo: choose_card
+    // realtimeChannel.on(
+    //   RealtimeListenTypes.broadcast,
+    //   ChannelFilter(event: 'throw_card'),
+    //   (payload, [ref]) {
+    //     final payloadData = payload['throw_card'];
+    //     print('throw_card - payload: $payloadData');
+    //     final throwCard = List<String>.from(payload['throw_card']);
+    //     print('throw_card payload[throw_card] : ${throwCard}');
+    //   },
+    // );
+
+    // todo: vote_for_card
+    // realtimeChannel.on(
+    //   RealtimeListenTypes.broadcast,
+    //   ChannelFilter(event: 'throw_card'),
+    //   (payload, [ref]) {
+    //     final payloadData = payload['throw_card'];
+    //     print('throw_card - payload: $payloadData');
+    //     final throwCard = List<String>.from(payload['throw_card']);
+    //     print('throw_card payload[throw_card] : ${throwCard}');
+    //   },
+    // );
+
+    // todo: finish
     // realtimeChannel.on(
     //   RealtimeListenTypes.broadcast,
     //   ChannelFilter(event: 'throw_card'),
