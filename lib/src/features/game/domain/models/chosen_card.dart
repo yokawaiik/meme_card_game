@@ -1,7 +1,7 @@
 import 'package:meme_card_game/src/features/game/domain/models/vote_for_card.dart';
 
-/// CardChoice - every user has it in his Room instance
-class CardChoice {
+/// ChosenCard - every user has it in his Room instance
+class ChosenCard {
   late final String userId;
   late final int round;
   late final int situationId;
@@ -13,7 +13,7 @@ class CardChoice {
   /// [isCurrentUser] only for player memory
   late final bool isCurrentUser;
 
-  CardChoice({
+  ChosenCard({
     required this.userId,
     required this.round,
     required this.situationId,
@@ -24,7 +24,7 @@ class CardChoice {
     this.votesList = votesList ?? [];
   }
 
-  CardChoice.fromMap(
+  ChosenCard.fromMap(
     Map<String, dynamic> data,
     String? currentUserId,
   ) {

@@ -1,10 +1,12 @@
 import 'package:meme_card_game/src/features/game/domain/enums/game_status.dart';
-import 'package:meme_card_game/src/features/game/domain/models/card_choice.dart';
+import 'package:meme_card_game/src/features/game/domain/models/chosen_card.dart';
 import 'package:meme_card_game/src/features/game/domain/models/player.dart';
 import 'package:meme_card_game/src/features/game/domain/models/player_confirmation.dart';
 import 'package:meme_card_game/src/features/game/domain/models/room_configuration.dart';
+import 'package:meme_card_game/src/features/game/domain/models/vote_for_card.dart';
 
 import '../enums/presence_object_type.dart';
+import 'game_exception.dart';
 import 'situation.dart';
 
 class Room {
@@ -19,10 +21,17 @@ class Room {
 
   late RoomConfiguration roomConfiguration;
 
-  late int _currentRound = 0;
-  int get currentRound => _currentRound;
+  // late int _currentRound = 0;
+  // int get currentRound => _currentRound;
 
-  //  int currentRound;
+  int get currentRound => _situationList.length;
+
+  /// [situationList] stored in memory every user
+  late List<Situation> _situationList;
+  List<Situation> get situationList => _situationList;
+  // todo: check currentSituation
+  Situation? get currentSituation =>
+      _situationList.isNotEmpty ? _situationList.last : null;
 
   /// [isAllPlayersConfirmed] to start game
   bool get isAllPlayersConfirm {
@@ -40,6 +49,7 @@ class Room {
   }) {
     this.players = players ?? [];
     this.roomConfiguration = roomConfiguration ?? RoomConfiguration();
+    _situationList = [];
   }
 
   Room.fromMap(
@@ -56,6 +66,7 @@ class Room {
     roomConfiguration = data['room_configuration'] == null
         ? RoomConfiguration.fromMap(data['room_configuration'])
         : RoomConfiguration();
+    _situationList = [];
   }
 
   /// only for game
@@ -104,26 +115,48 @@ class Room {
     status = started;
   }
 
-  void addActiveSituation(
+  void addSituation(
     Situation situation,
   ) {
-    // todo: add Active Situation
+    // todo: check addSituation
+    _situationList.add(situation);
   }
 
-  void addCard(
-    CardChoice cardChoice,
+  /// _getLastSituation() for internal using
+  Situation? _getLastSituation() {
+    if (_situationList.isEmpty) {
+      throw GameException("There are no need situations.");
+    } else {
+      return _situationList.last;
+    }
+  }
+
+  /// addChosenCard() add ChosenCard to last situation
+  void addChosenCard(
+    ChosenCard chosenCard,
   ) {
-    // todo: add card
+    // todo: check  chosen card
+    // _situationList
+    //     .firstWhere((situation) => situation.id == situationId)
+
+    _getLastSituation()?.chosenCards.add(chosenCard);
   }
 
   void addVotingResult(
-    String situationId,
-    String userId,
-  ) {
+      // String situationId,
+      String userId,
+      VoteForCard voteForCard) {
     // todo: add voting result by situation id
+    // _situationList
+    //     .firstWhere((situation) => situation.id == situationId)
+    _getLastSituation()
+        ?.chosenCards
+        .firstWhere((chosenCard) => chosenCard.userId == userId)
+        .votesList
+        .add(voteForCard);
   }
 
-  void nextRound() {
-    _currentRound++;
-  }
+  // void nextRound() {
+  //   _currentRound++;
+  // }
 }
