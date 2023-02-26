@@ -127,30 +127,33 @@ final router = GoRouter(
           name: routes_constants.gameSpace,
           path: routes_constants.gameSpacePath,
           builder: (context, goRouterState) =>
-              BlocListener<GameCubit, GameState>(
-            listenWhen: (previous, current) {
-              // todo: add finish screen
-              if (current is DeletedGameState) {
-                return true;
-              }
-              return false;
-            },
-            listener: (context, state) {
-              if (state is DeletedGameState) {
-                GoRouter.of(context)
-                    .pushReplacementNamed(routes_constants.gameCreate);
-              }
-            },
-            child: const GameSpaceScreen(),
-          ),
-          redirect: (context, state) => middlewareGuardWrapper(
-            context,
-            state,
-            [
-              middleware_guards.authRequired,
-              middleware_guards.gameRoomRequired,
-            ],
-          ),
+              // todo: uncomment after test layout
+              //     BlocListener<GameCubit, GameState>(
+              //   listenWhen: (previous, current) {
+              //     // todo: add finish screen
+              //     if (current is DeletedGameState) {
+              //       return true;
+              //     }
+              //     return false;
+              //   },
+              //   listener: (context, state) {
+              //     if (state is DeletedGameState) {
+              //       GoRouter.of(context)
+              //           .pushReplacementNamed(routes_constants.gameCreate);
+              //     }
+              //   },
+              //   child: const GameSpaceScreen(),
+              // ),
+              // redirect: (context, state) => middlewareGuardWrapper(
+              //   context,
+              //   state,
+              //   [
+              //     middleware_guards.authRequired,
+              //     middleware_guards.gameRoomRequired,
+              //   ],
+              // ),
+              // todo: remove it. it's only for lyout test
+              const GameSpaceScreen(),
         ),
       ],
     ),
