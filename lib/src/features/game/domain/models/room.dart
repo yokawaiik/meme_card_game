@@ -1,13 +1,16 @@
 import 'package:meme_card_game/src/features/game/domain/enums/game_status.dart';
-import 'package:meme_card_game/src/features/game/domain/models/chosen_card.dart';
 import 'package:meme_card_game/src/features/game/domain/models/player.dart';
 import 'package:meme_card_game/src/features/game/domain/models/player_confirmation.dart';
 import 'package:meme_card_game/src/features/game/domain/models/room_configuration.dart';
+import 'package:meme_card_game/src/features/game/domain/models/taken_cards.dart';
 import 'package:meme_card_game/src/features/game/domain/models/vote_for_card.dart';
 
 import '../enums/presence_object_type.dart';
+import 'game_card.dart';
 import 'game_exception.dart';
 import 'situation.dart';
+
+import 'package:collection/collection.dart';
 
 class Room {
   late final String id;
@@ -21,10 +24,16 @@ class Room {
 
   late RoomConfiguration roomConfiguration;
 
-  // late int _currentRound = 0;
-  // int get currentRound => _currentRound;
+  late List<GameCard> _currentPlayerCards;
+  List<GameCard> get currentPlayerCards => _currentPlayerCards;
 
   int get currentRound => _situationList.length;
+  late int currentRoundPlayersReadyCount;
+
+  /// [currentRoundPlayersReadyCount] 70% players must be agree to go next
+
+  late List<String> _availableCardIdList;
+  List<String> get availableCardIdList => _availableCardIdList;
 
   /// [situationList] stored in memory every user
   late List<Situation> _situationList;
@@ -46,10 +55,15 @@ class Room {
     this.isCreatedByCurrentUser = false,
     this.status = GameStatus.lobby,
     RoomConfiguration? roomConfiguration,
+    required List<String>? availableCardIdList,
   }) {
     this.players = players ?? [];
     this.roomConfiguration = roomConfiguration ?? RoomConfiguration();
     _situationList = [];
+    _currentPlayerCards = [];
+    _availableCardIdList = availableCardIdList ?? [];
+
+    currentRoundPlayersReadyCount = 0;
   }
 
   Room.fromMap(
@@ -67,6 +81,10 @@ class Room {
         ? RoomConfiguration.fromMap(data['room_configuration'])
         : RoomConfiguration();
     _situationList = [];
+    _currentPlayerCards = [];
+    _availableCardIdList = data["available_card_id_list"] ?? [];
+
+    currentRoundPlayersReadyCount = 0;
   }
 
   /// only for game
@@ -78,16 +96,22 @@ class Room {
       "created_by": createdBy,
       "game_status": status.index,
       "room_configuration": roomConfiguration.toMap(),
+      "available_card_id_list": _availableCardIdList,
     };
   }
 
   @override
   String toString() {
     final playersMapList = players?.map((player) => player.toMap()).toList();
+    final currentUserCardList =
+        _currentPlayerCards.map((card) => card.toMap()).toList();
 
     final room = toMap()
       ..addAll(
-        {"players": playersMapList},
+        {
+          "players": playersMapList,
+          "current_user_cards": currentUserCardList,
+        },
       );
 
     return room.toString();
@@ -133,13 +157,11 @@ class Room {
 
   /// addChosenCard() add ChosenCard to last situation
   void addChosenCard(
-    ChosenCard chosenCard,
+    GameCard card,
   ) {
     // todo: check  chosen card
-    // _situationList
-    //     .firstWhere((situation) => situation.id == situationId)
 
-    _getLastSituation()?.chosenCards.add(chosenCard);
+    _getLastSituation()?.cards.add(card);
   }
 
   void addVotingResult(
@@ -147,16 +169,53 @@ class Room {
       String userId,
       VoteForCard voteForCard) {
     // todo: add voting result by situation id
-    // _situationList
-    //     .firstWhere((situation) => situation.id == situationId)
+
     _getLastSituation()
-        ?.chosenCards
+        ?.cards
         .firstWhere((chosenCard) => chosenCard.userId == userId)
         .votesList
         .add(voteForCard);
   }
 
-  // void nextRound() {
-  //   _currentRound++;
-  // }
+  void addCardToCurrentPlayer(GameCard card) {
+    _currentPlayerCards.add(card);
+  }
+
+  void removeCardFromCurrentPlayer(String cardId) {
+    _currentPlayerCards.removeWhere((card) => card.cardId == cardId);
+  }
+
+  void removeCardFromAvailableCardIdList(String cardId) {
+    _availableCardIdList.removeWhere((cardId) => cardId == cardId);
+  }
+
+  Map<String, dynamic> initialCardsDistribution() {
+    List<TakenCards> distributedCards = [];
+
+    const start = 0;
+    final end = roomConfiguration.playerStartCardsCount * players!.length;
+
+    final cards = _availableCardIdList
+        .sublist(start, end)
+        .slices(roomConfiguration.playerStartCardsCount)
+        .toList();
+
+    for (var i = 0; i < players!.length; i++) {
+      final takenCards = TakenCards(
+        playerId: players![i].id,
+        takenCardIdList: cards[i],
+      );
+      distributedCards.add(takenCards);
+    }
+
+    _availableCardIdList.removeRange(
+      start,
+      end,
+    );
+
+    return {
+      "distributed_cards":
+          distributedCards.map((takenCards) => takenCards.toMap()).toList(),
+    };
+  }
 }

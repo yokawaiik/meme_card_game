@@ -27,8 +27,16 @@ class SomePlayerConfirmedGameState extends GameState {}
 
 class StartedGameState extends GameState {}
 
+class CardsTakenState extends GameState {}
+
 class SitautionChoosingState extends GameState {}
 
 class ChoosingCardState extends GameState {}
+
+class ChosenCardState extends GameState {}
+
+class VotedForCardState extends GameState {}
+
+class SomePlayerReadyToNextRound extends GameState {}
 
 class FinishedGameState extends GameState {}

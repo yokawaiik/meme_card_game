@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meme_card_game/src/features/auth/presentation/cubit/authentication_cubit.dart';
 import 'package:meme_card_game/src/features/game/presentation/cubit/game_cubit.dart';
+import 'package:meme_card_game/src/features/game/presentation/cubit/space_cubit.dart';
 import 'package:meme_card_game/src/features/game/presentation/screens/game_create_screen.dart';
 import 'package:meme_card_game/src/features/game/presentation/screens/game_lobby_screen.dart';
 import 'package:meme_card_game/src/features/profile/presentation/screens/edit_profile_screen.dart';
@@ -126,34 +127,58 @@ final router = GoRouter(
         GoRoute(
           name: routes_constants.gameSpace,
           path: routes_constants.gameSpacePath,
-          builder: (context, goRouterState) =>
-              // todo: uncomment after test layout
-              //     BlocListener<GameCubit, GameState>(
-              //   listenWhen: (previous, current) {
-              //     // todo: add finish screen
-              //     if (current is DeletedGameState) {
-              //       return true;
-              //     }
-              //     return false;
-              //   },
-              //   listener: (context, state) {
-              //     if (state is DeletedGameState) {
-              //       GoRouter.of(context)
-              //           .pushReplacementNamed(routes_constants.gameCreate);
-              //     }
-              //   },
-              //   child: const GameSpaceScreen(),
-              // ),
-              // redirect: (context, state) => middlewareGuardWrapper(
-              //   context,
-              //   state,
-              //   [
-              //     middleware_guards.authRequired,
-              //     middleware_guards.gameRoomRequired,
-              //   ],
-              // ),
-              // todo: remove it. it's only for lyout test
-              const GameSpaceScreen(),
+          builder: (context, goRouterState) {
+            // todo: uncomment after test layout
+            //     BlocListener<GameCubit, GameState>(
+            //   listenWhen: (previous, current) {
+            //     // todo: add finish screen
+            //     if (current is DeletedGameState) {
+            //       return true;
+            //     }
+            //     return false;
+            //   },
+            //   listener: (context, state) {
+            //     if (state is DeletedGameState) {
+            //       GoRouter.of(context)
+            //           .pushReplacementNamed(routes_constants.gameCreate);
+            //     }
+            //   },
+            //   child: const GameSpaceScreen(),
+            // ),
+            // redirect: (context, state) => middlewareGuardWrapper(
+            //   context,
+            //   state,
+            //   [
+            //     middleware_guards.authRequired,
+            //     middleware_guards.gameRoomRequired,
+            //   ],
+            // ),
+            // todo: remove it. it's only for lyout test
+
+            // return BlocProvider(
+            //   create: (context) => SpaceCubit(
+            //     authenticationCubit: context.read<AuthenticationCubit>(),
+            //     gameCubit: context.read<GameCubit>(),
+            //   ),
+            //   child: const GameSpaceScreen(),
+            // );
+
+            return BlocProvider(
+              create: (context) => SpaceCubit(
+                authenticationCubit: context.read<AuthenticationCubit>(),
+                gameCubit: context.read<GameCubit>(),
+              ),
+              child: BlocListener<SpaceCubit, SpaceState>(
+                listener: (context, state) {
+                  if (state is SpaceGameDeletedState) {
+                    GoRouter.of(context)
+                        .pushReplacementNamed(routes_constants.gameCreate);
+                  }
+                },
+                child: const GameSpaceScreen(),
+              ),
+            );
+          },
         ),
       ],
     ),

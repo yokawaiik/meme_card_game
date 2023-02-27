@@ -64,8 +64,6 @@ class GameSpaceBoardView extends StatelessWidget {
             child: Stack(
               children: [
                 Container(
-                  // width: double.infinity,
-                  // height: double.infinity,
                   decoration:
                       BoxDecoration(color: colorScheme.secondaryContainer),
                   child: Center(

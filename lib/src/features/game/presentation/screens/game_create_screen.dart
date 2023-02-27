@@ -99,9 +99,6 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
                       height: 10,
                     ),
 
-                    const SizedBox(
-                      height: 10,
-                    ),
                     DefaultTextField(
                       labelText: "Time to confirmation (seconds)",
                       controller: _timeToConfirmationTextController,

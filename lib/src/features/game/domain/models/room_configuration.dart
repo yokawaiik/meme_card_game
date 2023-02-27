@@ -4,14 +4,17 @@ const _defaultTimeforVoteForCard = 60;
 const _defaultTimeForChooseSituation = 20;
 const _defaultRoundsCount = 10;
 const _defaultPlayerStartCardsCount = 7;
+const _defaultPlayersCount = 5;
 
 class RoomConfiguration {
-  late bool automaticSituationSelection;
-  late int timeForConfirmation;
-  late int timeForVoteForCard;
-  late int timeForChooseSituation;
-  late int roundsCount;
-  late int playerStartCardsCount;
+  late final bool automaticSituationSelection;
+  late final int timeForConfirmation;
+  late final int timeForVoteForCard;
+  late final int timeForChooseSituation;
+  late final int roundsCount;
+  late final int playerStartCardsCount;
+  late final bool useCreatorCards;
+  late final int playersCount;
 
   /// [timeForConfirmation] when player have to confirm his participation
   /// [timeForVoteForCard] when player have to vote for the better card
@@ -23,6 +26,8 @@ class RoomConfiguration {
     this.timeForChooseSituation = 20,
     this.roundsCount = 10,
     this.playerStartCardsCount = 7,
+    this.useCreatorCards = false,
+    this.playersCount = 5,
   });
 
   RoomConfiguration.fromMap(Map<String, dynamic> data) {
@@ -38,6 +43,8 @@ class RoomConfiguration {
         _defaultTimeforVoteForCard;
     playerStartCardsCount = int.tryParse(data["player_start_cards_count"]) ??
         _defaultPlayerStartCardsCount;
+    useCreatorCards = data["use_creator_cards"] ?? false;
+    playersCount = data["players_count"] ?? _defaultPlayersCount;
   }
 
   Map<String, dynamic> toMap() {
@@ -48,6 +55,8 @@ class RoomConfiguration {
       "time_for_choose_situation": timeForChooseSituation,
       "rounds_count": roundsCount,
       "player_start_cards_count": playerStartCardsCount,
+      "use_creator_cards": useCreatorCards,
+      "players_count": _defaultPlayersCount,
     };
   }
 

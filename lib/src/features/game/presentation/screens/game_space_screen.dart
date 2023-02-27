@@ -5,9 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meme_card_game/src/common_widgets/default_text_field.dart';
 import 'package:meme_card_game/src/common_widgets/keep_alive_wrapper.dart';
+import 'package:meme_card_game/src/features/auth/presentation/cubit/authentication_cubit.dart';
 import 'package:meme_card_game/src/features/game/presentation/cubit/game_cubit.dart';
 
 import '../../../../routing/routes_constants.dart' as routes_constants;
+import '../cubit/space_cubit.dart';
 import 'game_space_board_view.dart';
 import 'game_space_players_view.dart';
 
@@ -23,6 +25,8 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
   // late int _currentView;
   late final PageController _pageViewController;
 
+  // late final SpaceCubit _spaceCubit;
+
   @override
   void initState() {
     _views = [
@@ -37,6 +41,12 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
     _pageViewController = PageController(
       initialPage: 0,
     );
+
+    // _spaceCubit = SpaceCubit(
+    //   gameCubit: context.read<GameCubit>(),
+    //   authenticationCubit: context.read<AuthenticationCubit>(),
+    // );
+
     super.initState();
   }
   // todo: slider with cards in bottom modal sheet
@@ -51,14 +61,15 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
       onWillPop: () => _closeRoom(context),
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.close),
-            onPressed: () {
-              // todo: add logic here
-              // GoRouter.of(context).pop();
-              // _closeRoom(context);
-            },
-          ),
+          // leading: IconButton(
+          //   icon: Icon(Icons.close),
+          //   onPressed: () {
+          //     // todo: add logic here
+          //     // GoRouter.of(context).pop();
+          //     // _closeRoom(context);
+          //   },
+          // ),
+
           title: const Text(
             'Game space',
           ),
@@ -113,54 +124,59 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
   }
 
   Future<bool> _closeRoom(BuildContext context) async {
-    var answer = false;
+    try {
+      var answer = false;
 
-    final gameCubit = context.read<GameCubit>();
+      final spaceCubit = context.read<SpaceCubit>();
 
-    final isCreatedByCurrentUser = gameCubit.room!.isCreatedByCurrentUser;
+      final isCreatedByCurrentUser = spaceCubit.room!.isCreatedByCurrentUser;
 
-    await showDialog(
-        context: context,
-        barrierDismissible: true,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Warning"),
-            content: Text(
-              isCreatedByCurrentUser
-                  ? "Delete room and close it"
-                  : "Leave the room",
-            ),
-            actions: [
-              TextButton(
+      await showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Warning"),
+              content: Text(
+                isCreatedByCurrentUser
+                    ? "Delete room and close it"
+                    : "Leave the room",
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      context.pop();
+                      answer = false;
+                    },
+                    child: const Text("No")),
+                ElevatedButton(
                   onPressed: () {
                     context.pop();
-                    answer = false;
+                    answer = true;
                   },
-                  child: const Text("No")),
-              ElevatedButton(
-                onPressed: () {
-                  context.pop();
-                  answer = true;
-                },
-                child: const Text(
-                  "Yes",
-                ),
-              )
-            ],
-          );
-        });
+                  child: const Text(
+                    "Yes",
+                  ),
+                )
+              ],
+            );
+          });
 
-    // if (answer && isCreatedByCurrentUser) {
-    //   gameCubit.deleteRoom();
-    // } else {
-    //   gameCubit.leaveRoom();
-    // }
-    if (answer) {
-      gameCubit.closeRoom();
+      if (answer) {
+        await spaceCubit.closeRoom();
+      }
+
+      // ? it's necessary because if return true and then use router will be exception
+    } catch (e) {
+      print("e : $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Something went wrong."),
+        ),
+      );
+    } finally {
+      return false;
     }
-
-    // ? it's necessary because if return true and then use router will be exception
-    return false;
   }
 
   void _chooseCard(BuildContext context) async {
