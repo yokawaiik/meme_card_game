@@ -138,33 +138,6 @@ class AuthApiService {
     }
   }
 
-  static Future<String?> uploadAvatarToStorage(
-    String userId,
-    Uint8List avatarBinary,
-  ) async {
-    try {
-      final bucket = storage.from(supabase_constants.appBucket);
-
-      final imagePath = generateImagePath(
-        rawFilePath: supabase_constants.baseUserAvatarFileName,
-        fileName: supabase_constants.baseUserAvatarFileName,
-        inDirectoryName: '${supabase_constants.userAvatarDirectory}/$userId',
-      );
-
-      final uploadedImagePath =
-          await bucket.uploadBinary(imagePath, avatarBinary);
-
-      final uploadedImageUrl = bucket.getPublicUrl(uploadedImagePath);
-
-      return uploadedImageUrl;
-    } catch (e) {
-      if (kDebugMode) {
-        print("AuthService - uploadAvatarToStorage - e: $e");
-      }
-      rethrow;
-    }
-  }
-
   static Future<Map<String, dynamic>> checkIfUserExists(
       Map<String, dynamic> params) async {
     try {
