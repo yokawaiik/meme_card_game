@@ -14,11 +14,6 @@ class GameApiService {
   static Future<RealtimeChannel?> createRoom(
       String roomTitle, String roomId) async {
     try {
-      if (kDebugMode) {
-        print(
-            'GameApiService - createRoom - _client.realtime.getChannels() : ${_client.realtime.getChannels()}');
-      }
-
       final channel = _client.channel(
         roomId,
         opts: RealtimeChannelConfig(
@@ -75,25 +70,26 @@ class GameApiService {
   }
 
   // todo: getSituations
-  Future<List<Situation>?> getSituations({String? createdBy}) async {
+  static Future<List<Situation>?> getSituations([String? createdBy]) async {
     try {
-      late final PostgrestListResponse rawSituations;
+      late final List<Map<String, dynamic>> rawSituations;
 
       if (createdBy != null) {
         rawSituations = await _client
             .from("situations")
-            .select<PostgrestListResponse>()
+            .select<List<Map<String, dynamic>>>()
             .eq('createdBy', createdBy);
       } else {
-        rawSituations =
-            await _client.from("situations").select<PostgrestListResponse>();
+        rawSituations = await _client
+            .from("situations")
+            .select<List<Map<String, dynamic>>>();
       }
 
-      if (rawSituations.data == null) {
+      if (rawSituations.isEmpty) {
         throw SupabaseException(null, "Situations wasn't found.");
       }
 
-      final situations = rawSituations.data!
+      final situations = rawSituations
           .map((rawSituation) => Situation.fromMap(rawSituation))
           .toList();
 
@@ -107,20 +103,20 @@ class GameApiService {
   }
 
   //todo: check getSituation
-  Future<Situation?> getSituation(String situationId) async {
+  static Future<Situation?> getSituation(String situationId) async {
     try {
       final rawSituation = await _client
           .from("situations")
-          .select<PostgrestResponse>()
+          .select<Map<String, dynamic>?>()
           .eq("id", situationId)
           .limit(1)
-          .single();
+          .maybeSingle();
 
-      if (rawSituation.data == null) {
+      if (rawSituation == null) {
         throw SupabaseException(null, "Situation wasn't found.");
       }
 
-      final situation = Situation.fromMap(rawSituation.data);
+      final situation = Situation.fromMap(rawSituation);
 
       return situation;
     } catch (e) {
@@ -132,20 +128,20 @@ class GameApiService {
   }
 
   //todo: check getCard
-  Future<GameCard?> getCard(String cardId) async {
+  static Future<GameCard?> getCard(String cardId) async {
     try {
-      final PostgrestResponse rawCard = await _client
+      final rawCard = await _client
           .from("cards")
-          .select<PostgrestResponse>()
+          .select<Map<String, dynamic>?>()
           .eq("id", cardId)
           .limit(1)
-          .single();
+          .maybeSingle();
 
-      if (rawCard.data == null) {
+      if (rawCard == null) {
         throw SupabaseException(null, "Card wasn't found.");
       }
 
-      final card = GameCard.fromMap(rawCard.data, _client.auth.currentUser!.id);
+      final card = GameCard.fromMap(rawCard, _client.auth.currentUser!.id);
 
       return card;
     } catch (e) {
@@ -157,21 +153,51 @@ class GameApiService {
   }
 
   // todo: check getCards
-  Future<List<GameCard>?> getCards(List<String> cardsIdList) async {
+  static Future<List<GameCard>?> getCards(List<String> cardsIdList) async {
     try {
-      final PostgrestListResponse rawCards = await _client
+      final rawCards = await _client
           .from("cards")
-          .select<PostgrestListResponse>()
+          .select<List<Map<String, dynamic>>>()
           .in_('id', cardsIdList);
 
-      if (rawCards.data == null) {
+      if (rawCards.isEmpty) {
         throw SupabaseException(null, "Cards wasn't found.");
       }
 
-      final card = rawCards.data!
+      final card = rawCards
           .map((rawCard) =>
               GameCard.fromMap(rawCard, _client.auth.currentUser!.id))
           .toList();
+
+      return card;
+    } catch (e) {
+      if (kDebugMode) {
+        print("GameApiService - getCards - e: $e");
+      }
+      rethrow;
+    }
+  }
+
+  // todo: check getCardsIdList
+  static Future<List<String>?> getCardsIdList([String? createdBy]) async {
+    try {
+      late final List<Map<String, dynamic>> rawCardsIdList;
+      if (createdBy == null) {
+        rawCardsIdList =
+            await _client.from("cards").select<List<Map<String, dynamic>>>();
+      } else {
+        rawCardsIdList = await _client
+            .from("cards")
+            .select<List<Map<String, dynamic>>>()
+            .eq("createdBy", createdBy);
+      }
+
+      if (rawCardsIdList.isEmpty) {
+        throw SupabaseException(null, "Cards wasn't found.");
+      }
+
+      final card =
+          rawCardsIdList.map((rawCard) => rawCard["id"] as String).toList();
 
       return card;
     } catch (e) {

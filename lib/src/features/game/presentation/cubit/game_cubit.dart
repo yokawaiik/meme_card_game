@@ -8,7 +8,7 @@ import 'package:meme_card_game/src/features/game/domain/models/player.dart';
 import 'package:meme_card_game/src/features/game/domain/models/room.dart';
 import 'package:meme_card_game/src/features/game/domain/models/room_configuration.dart';
 import 'package:meme_card_game/src/features/game/domain/models/taken_cards.dart';
-import 'package:meme_card_game/src/features/game/utils/generate_random_situation.dart';
+import 'package:meme_card_game/src/features/game/utils/generate_random_number.dart';
 import 'package:meme_card_game/src/models/realtime_exception.dart';
 import 'package:nanoid/nanoid.dart' as nanoid;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -21,6 +21,7 @@ import 'package:collection/collection.dart';
 
 import '../../domain/models/game_card.dart';
 import '../../domain/models/player_confirmation.dart';
+import '../../domain/models/situation.dart';
 
 part 'game_state.dart';
 
@@ -43,23 +44,44 @@ class GameCubit extends Cubit<GameState> {
     try {
       emit(LoadingGameState());
 
-      final roomId = nanoid.nanoid();
-
-      final channel = await GameApiService.createRoom(roomName, roomId);
-      gameChannel = channel;
-
       // if (roomConfiguration.useCreatorCards) {
       //    todo: request - get user's cards
       // } else {
       //   todo: request - get public cards
       // }
 
-      final availableCards = List.generate(
-        roomConfiguration.playerStartCardsCount *
-                roomConfiguration.playersCount +
-            roomConfiguration.playersCount * roomConfiguration.roundsCount,
-        (index) => "id$index",
-      );
+      late final List<Situation>? situations;
+      late final List<String>? cardsIdList;
+      if (roomConfiguration.useCreatorCards) {
+        situations = await GameApiService.getSituations(currentUser!.id);
+        cardsIdList = await GameApiService.getCardsIdList(currentUser!.id);
+      } else {
+        situations = await GameApiService.getSituations();
+        cardsIdList = await GameApiService.getCardsIdList();
+      }
+
+      // ? info : check if cards and situations enough
+      if (situations == null) {
+        emit(GameFailureState("Situations weren't found."));
+      } else if (situations.length >= roomConfiguration.roundsCount) {
+        emit(GameFailureState(
+            "Situations aren't enough for set up game rounds."));
+      }
+      if (cardsIdList == null) {
+        emit(GameFailureState("Cards weren't found."));
+      } else if (cardsIdList.length >=
+          (roomConfiguration.playerStartCardsCount *
+                  roomConfiguration.playersCount) +
+              (roomConfiguration.roundsCount *
+                  roomConfiguration.playersCount)) {
+        emit(GameFailureState(
+            "Cards aren't enough for set up game rounds and users count."));
+      }
+
+      final roomId = nanoid.nanoid();
+
+      final channel = await GameApiService.createRoom(roomName, roomId);
+      gameChannel = channel;
 
       _room = Room(
         id: roomId,
@@ -67,7 +89,7 @@ class GameCubit extends Cubit<GameState> {
         createdBy: authenticationCubit.currentUser!.id,
         isCreatedByCurrentUser: true,
         roomConfiguration: roomConfiguration,
-        availableCardIdList: availableCards,
+        availableCardIdList: cardsIdList,
       );
 
       _setEventHandlers(gameChannel!);
@@ -171,6 +193,12 @@ class GameCubit extends Cubit<GameState> {
             if (kDebugMode) {
               print('this room has already been overflown');
             }
+            emit(
+              GameFailureState(
+                RealtimeException(
+                    null, 'This room has already been overflown.'),
+              ),
+            );
             emit(DeletedGameState());
             _deleteRoom();
             _leaveRoom();
@@ -279,21 +307,35 @@ class GameCubit extends Cubit<GameState> {
       ChannelFilter(event: 'game_start'),
       (payload, [ref]) async {
         log("EVENT BROADCAST - game_start");
+        try {
+          room!.setStatus(GameStatus.started);
 
-        room!.setStatus(GameStatus.started);
+          if (room!.isCreatedByCurrentUser) {
+            // ? set cards first by creator
 
-        // ? set cards first by creator
-        if (room!.isCreatedByCurrentUser) {
-          final distributedCards = _room!.initialCardsDistribution();
+            final distributedCards = _room!.initialCardsDistribution();
 
-          await realtimeChannel.send(
-            type: RealtimeListenTypes.broadcast,
-            event: "distribute_cards",
-            payload: distributedCards,
-          );
+            await realtimeChannel.send(
+              type: RealtimeListenTypes.broadcast,
+              event: "distribute_cards",
+              payload: {"distributed_cards": distributedCards},
+            );
+
+            // ? add situations
+            final situations = await GameApiService.getSituations();
+
+            for (var situation in situations!) {
+              _room!.addSituation(situation);
+
+              print("situation was added to room: $situation.");
+            }
+          }
+
+          emit(StartedGameState());
+        } catch (e) {
+          print("EVENT BROADCAST - e: $e.");
+          emit(GameFailureState(e));
         }
-
-        emit(StartedGameState());
       },
     );
 
@@ -301,7 +343,7 @@ class GameCubit extends Cubit<GameState> {
     realtimeChannel.on(
       RealtimeListenTypes.broadcast,
       ChannelFilter(event: 'distribute_cards'),
-      (payload, [ref]) {
+      (payload, [ref]) async {
         log("EVENT BROADCAST - distribute_cards");
 
         print(payload["distributed_cards"]);
@@ -318,16 +360,29 @@ class GameCubit extends Cubit<GameState> {
           // todo: Add Card to current user
           // todo: load cards
 
-          for (var playerCards in distributedCards) {
-            for (var cardId in playerCards.takenCardIdList) {
+          // for (var playerCards in distributedCards) {
+          //   for (var cardId in playerCards.takenCardIdList) {
+          //     _room!.removeCardFromAvailableCardIdList(cardId);
+          //   }
+          // }
+
+          for (var distributedCard in distributedCards) {
+            // ? info: add cards to user
+            if (distributedCard.playerId == currentUser!.id) {
+              final gameCards = await GameApiService.getCards(
+                  distributedCard.takenCardIdList);
+
+              for (var gameCard in gameCards!) {
+                _room!.addCardToCurrentPlayer(gameCard);
+                print("gameCard was distributed: $gameCard");
+              }
+
+              emit(CardsTakenState(currentUser: true));
+            }
+            for (var cardId in distributedCard.takenCardIdList) {
               _room!.removeCardFromAvailableCardIdList(cardId);
             }
           }
-
-          print(distributedCardsRaw);
-          print(_room!.availableCardIdList);
-
-          emit(CardsTakenState());
         }
       },
     );
@@ -335,32 +390,55 @@ class GameCubit extends Cubit<GameState> {
     // todo: take_card after round's end
     realtimeChannel.on(
       RealtimeListenTypes.broadcast,
-      ChannelFilter(event: 'taken_card'),
-      (payload, [ref]) {
-        log("EVENT BROADCAST - taken_card");
+      ChannelFilter(event: 'distribute_card'),
+      (payload, [ref]) async {
+        log("EVENT BROADCAST - distribute_card");
 
-        final takenCardsRaw = payload["taken_card"] as Map<String, dynamic>;
-        final takenCards = TakenCards.fromMap(takenCardsRaw);
+        final distributedCardRaw =
+            payload["distribute_card"] as Map<String, dynamic>;
+        final distributedCard = TakenCards.fromMap(distributedCardRaw);
 
-        print(takenCards);
+        // print(distributedCard);
 
-        // todo : request card from db
+        if (distributedCard.playerId == currentUser!.id) {
+          final gameCard = await GameApiService.getCard(
+              distributedCard.takenCardIdList.first);
 
-        emit(CardsTakenState());
+          print("gameCard was distributed: $gameCard");
+
+          _room!.addCardToCurrentPlayer(gameCard!);
+
+          emit(CardsTakenState(currentUser: true));
+        }
+        for (var cardId in distributedCard.takenCardIdList) {
+          _room!.removeCardFromAvailableCardIdList(cardId);
+        }
       },
     );
 
     // todo: choose_situation
-    // realtimeChannel.on(
-    //   RealtimeListenTypes.broadcast,
-    //   ChannelFilter(event: 'choose_situation'),
-    //   (payload, [ref]) {
-    //     final payloadData = payload['throw_card'];
-    //     print('throw_card - payload: $payloadData');
-    //     final throwCard = List<String>.from(payload['throw_card']);
-    //     print('throw_card payload[throw_card] : ${throwCard}');
-    //   },
-    // );
+    realtimeChannel.on(
+      RealtimeListenTypes.broadcast,
+      ChannelFilter(event: 'pick_situation'),
+      (payload, [ref]) async {
+        try {
+          print('EVENT - pick_situation');
+
+          final situation =
+              await GameApiService.getSituation(payload['picked_situation_id']);
+
+          print("Situation was picked: $situation.");
+
+          room!.addSituation(situation!);
+          emit(GameSitautionPickedState(situation));
+        } catch (e) {
+          if (kDebugMode) {
+            print("EVENT - pick_situation - e: $e.");
+          }
+          emit(GameFailureState("Something went wrong."));
+        }
+      },
+    );
 
     // todo: choose_card
     // todo: remove card form currentPlayerCard

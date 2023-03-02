@@ -30,4 +30,9 @@ class Situation {
       "object_type": BroadcastObjectType.situation.index,
     };
   }
+
+  @override
+  String toString() {
+    return "Situation: ${toMap()}.";
+  }
 }

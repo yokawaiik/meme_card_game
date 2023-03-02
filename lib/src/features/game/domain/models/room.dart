@@ -42,6 +42,9 @@ class Room {
   Situation? get currentSituation =>
       _situationList.isNotEmpty ? _situationList.last : null;
 
+  late List<Situation> _pickedSituationList;
+  List<Situation> get pickedSituationList => _pickedSituationList;
+
   /// [isAllPlayersConfirmed] to start game
   bool get isAllPlayersConfirm {
     return players?.every((player) => player.isConfirm) ?? false;
@@ -60,6 +63,7 @@ class Room {
     this.players = players ?? [];
     this.roomConfiguration = roomConfiguration ?? RoomConfiguration();
     _situationList = [];
+    _pickedSituationList = [];
     _currentPlayerCards = [];
     _availableCardIdList = availableCardIdList ?? [];
 
@@ -83,6 +87,7 @@ class Room {
     _situationList = [];
     _currentPlayerCards = [];
     _availableCardIdList = data["available_card_id_list"] ?? [];
+    _pickedSituationList = [];
 
     currentRoundPlayersReadyCount = 0;
   }
@@ -142,7 +147,6 @@ class Room {
   void addSituation(
     Situation situation,
   ) {
-    // todo: check addSituation
     _situationList.add(situation);
   }
 
@@ -175,6 +179,13 @@ class Room {
         .firstWhere((chosenCard) => chosenCard.userId == userId)
         .votesList
         .add(voteForCard);
+  }
+
+  void pickSituation(String situationId) {
+    final pickedSituation =
+        _situationList.firstWhere((situation) => situation.id == situationId);
+
+    _pickedSituationList.add(pickedSituation);
   }
 
   void addCardToCurrentPlayer(GameCard card) {

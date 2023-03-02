@@ -27,9 +27,15 @@ class SomePlayerConfirmedGameState extends GameState {}
 
 class StartedGameState extends GameState {}
 
-class CardsTakenState extends GameState {}
+class CardsTakenState extends GameState {
+  final bool currentUser;
+  CardsTakenState({this.currentUser = false});
+}
 
-class SitautionChoosingState extends GameState {}
+class GameSitautionPickedState extends GameState {
+  Situation situation;
+  GameSitautionPickedState(this.situation);
+}
 
 class ChoosingCardState extends GameState {}
 
@@ -40,3 +46,8 @@ class VotedForCardState extends GameState {}
 class SomePlayerReadyToNextRound extends GameState {}
 
 class FinishedGameState extends GameState {}
+
+class GameFailureState extends GameState {
+  Object? error;
+  GameFailureState(error);
+}

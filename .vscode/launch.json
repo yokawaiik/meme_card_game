@@ -4,15 +4,7 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-    {
-      "name": "Supabase auto_scripts (dev)",
-      "type": "dart",
-      "request": "launch",
-      "program": "${workspaceFolder}/supabase/auto_scripts/bin/main.dart",
-      "args": [
-        "--dart-define-from-file=.env.development.json",
-      ]
-    },
+
     {
       "name": "meme_card_game",
       "request": "launch",

@@ -128,47 +128,22 @@ final router = GoRouter(
           name: routes_constants.gameSpace,
           path: routes_constants.gameSpacePath,
           builder: (context, goRouterState) {
-            // todo: uncomment after test layout
-            //     BlocListener<GameCubit, GameState>(
-            //   listenWhen: (previous, current) {
-            //     // todo: add finish screen
-            //     if (current is DeletedGameState) {
-            //       return true;
-            //     }
-            //     return false;
-            //   },
-            //   listener: (context, state) {
-            //     if (state is DeletedGameState) {
-            //       GoRouter.of(context)
-            //           .pushReplacementNamed(routes_constants.gameCreate);
-            //     }
-            //   },
-            //   child: const GameSpaceScreen(),
-            // ),
-            // redirect: (context, state) => middlewareGuardWrapper(
-            //   context,
-            //   state,
-            //   [
-            //     middleware_guards.authRequired,
-            //     middleware_guards.gameRoomRequired,
-            //   ],
-            // ),
-            // todo: remove it. it's only for lyout test
-
-            // return BlocProvider(
-            //   create: (context) => SpaceCubit(
-            //     authenticationCubit: context.read<AuthenticationCubit>(),
-            //     gameCubit: context.read<GameCubit>(),
-            //   ),
-            //   child: const GameSpaceScreen(),
-            // );
-
             return BlocProvider(
               create: (context) => SpaceCubit(
                 authenticationCubit: context.read<AuthenticationCubit>(),
                 gameCubit: context.read<GameCubit>(),
               ),
               child: BlocListener<SpaceCubit, SpaceState>(
+                listenWhen: (previous, current) {
+                  // todo: add finish screen
+                  if (current is SpaceGameDeletedState) {
+                    return true;
+                  }
+                  if (current is SpaceGameFinishedState) {
+                    return true;
+                  }
+                  return false;
+                },
                 listener: (context, state) {
                   if (state is SpaceGameDeletedState) {
                     GoRouter.of(context)
@@ -179,6 +154,14 @@ final router = GoRouter(
               ),
             );
           },
+          redirect: (context, state) => middlewareGuardWrapper(
+            context,
+            state,
+            [
+              middleware_guards.authRequired,
+              middleware_guards.gameRoomRequired,
+            ],
+          ),
         ),
       ],
     ),
