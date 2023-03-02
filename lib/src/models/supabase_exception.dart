@@ -1,7 +1,7 @@
 enum KindOfException { unknown, notFound, auth, jwtExpired }
 
 class SupabaseException implements Exception {
-  String title;
+  String? title;
   String msg;
 
   KindOfException kindOfException;
