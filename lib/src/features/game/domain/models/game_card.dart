@@ -4,13 +4,9 @@ import 'package:meme_card_game/src/features/game/domain/models/vote_for_card.dar
 /// Card - every user has it in his Room instance
 class GameCard {
   late final String userId;
-
   late final int round;
-
   late final String situationId;
-
   late final String cardId;
-
   late final String imageUrl;
 
   /// [votesList] only for player memory
@@ -18,6 +14,7 @@ class GameCard {
 
   /// [isCurrentUser] only for player memory
   late final bool isCurrentUser;
+  late bool isImagePicked;
 
   GameCard({
     required this.userId,
@@ -26,6 +23,7 @@ class GameCard {
     required this.cardId,
     required this.imageUrl,
     this.isCurrentUser = false,
+    this.isImagePicked = false,
     List<VoteForCard>? votesList,
   }) {
     this.votesList = votesList ?? [];
@@ -41,6 +39,7 @@ class GameCard {
     cardId = data["card_id"];
     votesList = [];
     isCurrentUser = userId == currentUserId ? true : false;
+    isImagePicked = false;
     imageUrl = data["image_url"];
   }
 

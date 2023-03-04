@@ -22,5 +22,8 @@ const gameLobbyPath = 'game/lobby';
 const gameSpace = 'GameSpace';
 const gameSpacePath = 'game/space';
 
+const gameFinished = 'GameFinished';
+const gameFinishedPath = 'game/finished';
+
 const error = 'Error';
 const errorPath = '/error';

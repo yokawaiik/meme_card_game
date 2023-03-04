@@ -7,7 +7,7 @@ class SpaceInitialState extends SpaceState {}
 
 class SpaceSituationPickedState extends SpaceState {}
 
-class SpaceCardChosenState extends SpaceState {}
+class SpaceCardPickedState extends SpaceState {}
 
 class SpaceVotedForCardState extends SpaceState {}
 
@@ -15,10 +15,14 @@ class SpaceLoadingState extends SpaceState {}
 
 class SpaceFailureState extends SpaceState {
   Object? error;
-  SpaceFailureState(error);
+  SpaceFailureState(this.error);
 }
 
-class SpaceAddedCardToCurrentPlayer extends SpaceState {}
+class SpaceReadyForNextRoundState extends SpaceState {}
+
+class SpaceNextRoundState extends SpaceState {}
+
+class SpaceAddedCardToCurrentPlayerState extends SpaceState {}
 
 class SpaceSomePlayerLeftState extends SpaceState {}
 

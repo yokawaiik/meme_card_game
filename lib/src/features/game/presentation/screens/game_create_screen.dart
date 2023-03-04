@@ -99,78 +99,78 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
                       height: 10,
                     ),
 
-                    DefaultTextField(
-                      labelText: "Time to confirmation (seconds)",
-                      controller: _timeToConfirmationTextController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (value) {
-                        if (value == "") {
-                          _timeToConfirmationTextController.text += "10";
-                        }
-                      },
-                      readOnly: true,
-                      validator: (value) => validators.onlyNumbers(
-                        "Time to confirmation",
-                        int.parse("${value ?? 0}"),
-                        minValue: 10,
-                        maxValue: 180,
-                        isRequired: true,
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    DefaultTextField(
-                      labelText: "Time for choose situation (seconds)",
-                      controller: _timeForChooseSituationTextController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (value) {
-                        if (value == "") {
-                          _timeForChooseSituationTextController.text += "10";
-                        }
-                      },
-                      readOnly: true,
-                      validator: (value) => validators.onlyNumbers(
-                        "Time for choose situation",
-                        int.parse("${value ?? 0}"),
-                        minValue: 10,
-                        maxValue: 180,
-                        isRequired: true,
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    DefaultTextField(
-                      labelText: "Time for vote for card (seconds)",
-                      controller: _timeForVoteForCardTextController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (value) {
-                        if (value == "") {
-                          _timeForVoteForCardTextController.text += "10";
-                        }
-                      },
-                      readOnly: true,
-                      validator: (value) => validators.onlyNumbers(
-                        "Time for vote for card",
-                        int.parse("${value ?? 0}"),
-                        minValue: 10,
-                        maxValue: 180,
-                        isRequired: true,
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    // DefaultTextField(
+                    //   labelText: "Time to confirmation (seconds)",
+                    //   controller: _timeToConfirmationTextController,
+                    //   keyboardType: TextInputType.number,
+                    //   inputFormatters: [
+                    //     FilteringTextInputFormatter.digitsOnly,
+                    //   ],
+                    //   onChanged: (value) {
+                    //     if (value == "") {
+                    //       _timeToConfirmationTextController.text += "10";
+                    //     }
+                    //   },
+                    //   readOnly: true,
+                    //   validator: (value) => validators.onlyNumbers(
+                    //     "Time to confirmation",
+                    //     int.parse("${value ?? 0}"),
+                    //     minValue: 10,
+                    //     maxValue: 180,
+                    //     isRequired: true,
+                    //   ),
+                    // ),
+                    // const SizedBox(
+                    //   height: 10,
+                    // ),
+                    // DefaultTextField(
+                    //   labelText: "Time for choose situation (seconds)",
+                    //   controller: _timeForChooseSituationTextController,
+                    //   keyboardType: TextInputType.number,
+                    //   inputFormatters: [
+                    //     FilteringTextInputFormatter.digitsOnly,
+                    //   ],
+                    //   onChanged: (value) {
+                    //     if (value == "") {
+                    //       _timeForChooseSituationTextController.text += "10";
+                    //     }
+                    //   },
+                    //   readOnly: true,
+                    //   validator: (value) => validators.onlyNumbers(
+                    //     "Time for choose situation",
+                    //     int.parse("${value ?? 0}"),
+                    //     minValue: 10,
+                    //     maxValue: 180,
+                    //     isRequired: true,
+                    //   ),
+                    // ),
+                    // const SizedBox(
+                    //   height: 10,
+                    // ),
+                    // DefaultTextField(
+                    //   labelText: "Time for vote for card (seconds)",
+                    //   controller: _timeForVoteForCardTextController,
+                    //   keyboardType: TextInputType.number,
+                    //   inputFormatters: [
+                    //     FilteringTextInputFormatter.digitsOnly,
+                    //   ],
+                    //   onChanged: (value) {
+                    //     if (value == "") {
+                    //       _timeForVoteForCardTextController.text += "10";
+                    //     }
+                    //   },
+                    //   readOnly: true,
+                    //   validator: (value) => validators.onlyNumbers(
+                    //     "Time for vote for card",
+                    //     int.parse("${value ?? 0}"),
+                    //     minValue: 10,
+                    //     maxValue: 180,
+                    //     isRequired: true,
+                    //   ),
+                    // ),
+                    // const SizedBox(
+                    //   height: 10,
+                    // ),
                     DefaultTextField(
                       labelText: "Rounds count",
                       controller: _roundsCountTextController,

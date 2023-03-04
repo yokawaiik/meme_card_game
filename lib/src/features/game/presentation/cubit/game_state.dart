@@ -37,15 +37,15 @@ class GameSitautionPickedState extends GameState {
   GameSitautionPickedState(this.situation);
 }
 
-class ChoosingCardState extends GameState {}
+class GameNextRoundState extends GameState {}
 
-class ChosenCardState extends GameState {}
+class GamePickedCardState extends GameState {}
 
-class VotedForCardState extends GameState {}
+class GameVotedForCardState extends GameState {}
 
-class SomePlayerReadyToNextRound extends GameState {}
+class GameSomePlayerReadyToNextRound extends GameState {}
 
-class FinishedGameState extends GameState {}
+class GameFinishedState extends GameState {}
 
 class GameFailureState extends GameState {
   Object? error;

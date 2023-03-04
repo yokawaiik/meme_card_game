@@ -148,6 +148,9 @@ final router = GoRouter(
                   if (state is SpaceGameDeletedState) {
                     GoRouter.of(context)
                         .pushReplacementNamed(routes_constants.gameCreate);
+                  } else if (state is SpaceGameFinishedState) {
+                    GoRouter.of(context)
+                        .pushReplacementNamed(routes_constants.gameFinished);
                   }
                 },
                 child: const GameSpaceScreen(),
@@ -160,6 +163,18 @@ final router = GoRouter(
             [
               middleware_guards.authRequired,
               middleware_guards.gameRoomRequired,
+            ],
+          ),
+        ),
+        GoRoute(
+          name: routes_constants.gameFinished,
+          path: routes_constants.gameFinishedPath,
+          builder: (context, goRouterState) => const GameFinishedScreen(),
+          redirect: (context, state) => middlewareGuardWrapper(
+            context,
+            state,
+            [
+              // todo: check finish
             ],
           ),
         ),

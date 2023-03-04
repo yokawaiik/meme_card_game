@@ -1,4 +1,5 @@
 import 'package:meme_card_game/src/features/game/domain/enums/game_status.dart';
+import 'package:meme_card_game/src/features/game/domain/models/game_round.dart';
 import 'package:meme_card_game/src/features/game/domain/models/player.dart';
 import 'package:meme_card_game/src/features/game/domain/models/player_confirmation.dart';
 import 'package:meme_card_game/src/features/game/domain/models/room_configuration.dart';
@@ -20,7 +21,7 @@ class Room {
   late List<Player>? players;
 
   /// [status] game status
-  late GameStatus status;
+  // late GameStatus status;
 
   late RoomConfiguration roomConfiguration;
 
@@ -28,22 +29,27 @@ class Room {
   List<GameCard> get currentPlayerCards => _currentPlayerCards;
 
   int get currentRound => _situationList.length;
-  late int currentRoundPlayersReadyCount;
 
-  /// [currentRoundPlayersReadyCount] 70% players must be agree to go next
+  /// [currentRoundPlayersReadyCount] players must be agree to go next
+  late int currentRoundPlayersReadyCount;
 
   late List<String> _availableCardIdList;
   List<String> get availableCardIdList => _availableCardIdList;
 
   /// [situationList] stored in memory every user
   late List<Situation> _situationList;
+
   List<Situation> get situationList => _situationList;
-  // todo: check currentSituation
+
   Situation? get currentSituation =>
       _situationList.isNotEmpty ? _situationList.last : null;
 
+  late int currentRoundNumber;
+
   late List<Situation> _pickedSituationList;
   List<Situation> get pickedSituationList => _pickedSituationList;
+
+  late final GameRound currentGameRound;
 
   /// [isAllPlayersConfirmed] to start game
   bool get isAllPlayersConfirm {
@@ -56,7 +62,7 @@ class Room {
     required this.createdBy,
     List<Player>? players,
     this.isCreatedByCurrentUser = false,
-    this.status = GameStatus.lobby,
+    // this.status = GameStatus.lobby,
     RoomConfiguration? roomConfiguration,
     required List<String>? availableCardIdList,
   }) {
@@ -68,6 +74,8 @@ class Room {
     _availableCardIdList = availableCardIdList ?? [];
 
     currentRoundPlayersReadyCount = 0;
+    currentRoundNumber = 0;
+    currentGameRound = GameRound();
   }
 
   Room.fromMap(
@@ -80,7 +88,7 @@ class Room {
     createdBy = data['created_by'];
     isCreatedByCurrentUser = createdBy == currentUserId;
     this.players = players ?? [];
-    status = data['game_status'] ?? GameStatus.lobby;
+    // status = data['game_status'] ?? GameStatus.lobby;
     roomConfiguration = data['room_configuration'] == null
         ? RoomConfiguration.fromMap(data['room_configuration'])
         : RoomConfiguration();
@@ -90,6 +98,8 @@ class Room {
     _pickedSituationList = [];
 
     currentRoundPlayersReadyCount = 0;
+    currentRoundNumber = 0;
+    currentGameRound = GameRound();
   }
 
   /// only for game
@@ -99,7 +109,7 @@ class Room {
       "id": id,
       "title": title,
       "created_by": createdBy,
-      "game_status": status.index,
+      // "game_status": status.index,
       "room_configuration": roomConfiguration.toMap(),
       "available_card_id_list": _availableCardIdList,
     };
@@ -140,9 +150,9 @@ class Room {
     confirmedPlayer.isConfirm = playerConfirmation.isConfirm;
   }
 
-  void setStatus(GameStatus started) {
-    status = started;
-  }
+  // void setStatus(GameStatus started) {
+  //   status = started;
+  // }
 
   void addSituation(
     Situation situation,
@@ -168,15 +178,12 @@ class Room {
     _getLastSituation()?.cards.add(card);
   }
 
-  void addVotingResult(
-      // String situationId,
-      String userId,
-      VoteForCard voteForCard) {
+  void addVotingResult(VoteForCard voteForCard) {
     // todo: add voting result by situation id
 
     _getLastSituation()
         ?.cards
-        .firstWhere((chosenCard) => chosenCard.userId == userId)
+        .firstWhere((chosenCard) => chosenCard.cardId == voteForCard.cardId)
         .votesList
         .add(voteForCard);
   }
@@ -200,11 +207,16 @@ class Room {
     _availableCardIdList.removeWhere((cardId) => cardId == cardId);
   }
 
-  Map<String, dynamic> initialCardsDistribution() {
+  List<Map<String, dynamic>> distributeCards({int? count}) {
     List<TakenCards> distributedCards = [];
 
+    final countCards =
+        count == null ? roomConfiguration.playerStartCardsCount : count;
+
     const start = 0;
-    final end = roomConfiguration.playerStartCardsCount * players!.length;
+
+    // final end = roomConfiguration.playerStartCardsCount * players!.length;
+    final end = countCards * players!.length;
 
     final cards = _availableCardIdList
         .sublist(start, end)
@@ -224,9 +236,45 @@ class Room {
       end,
     );
 
-    return {
-      "distributed_cards":
-          distributedCards.map((takenCards) => takenCards.toMap()).toList(),
-    };
+    return distributedCards.map((takenCards) => takenCards.toMap()).toList();
+  }
+
+  /// [currentGameRoundVoteForCard] in memory for support
+  void currentGameRoundVoteForCard(String cardId) {
+    currentGameRound.votedCardId = cardId;
+  }
+
+  /// [currentGameRoundPickCardId] in memory for support
+  void currentGameRoundPickCardId(String cardId) {
+    currentGameRound.pickedCardId = cardId;
+  }
+
+  /// [currentGameRoundReadyForNextRound] in memory for support
+  void currentGameRoundReadyForNextRound([bool isReady = true]) {
+    currentGameRound.isReadyForNextRound = isReady;
+  }
+
+  // void _currentGameRoundRefresh() {
+  //   currentGameRound.votedCardId = null;
+  //   currentGameRound.pickedCardId = null;
+  //   currentGameRound.isReadyForNextRound = false;
+  // }
+
+  void someUserReadyForNextRound() {
+    currentRoundPlayersReadyCount++;
+  }
+
+  // void _clearReadyForNextRoundCounter() {
+  //   currentRoundPlayersReadyCount++;
+  // }
+
+  /// nextRound() - when next round started
+  void nextRound() {
+    currentRoundPlayersReadyCount = 0;
+    currentRoundNumber++;
+
+    currentGameRound.votedCardId = null;
+    currentGameRound.pickedCardId = null;
+    currentGameRound.isReadyForNextRound = false;
   }
 }

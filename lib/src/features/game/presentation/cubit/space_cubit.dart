@@ -40,8 +40,6 @@ class SpaceCubit extends Cubit<SpaceState> {
     _streamSubscription =
         gameCubit.stream.listen(_streamSubscriptionForGameCubit);
 
-    // todo: remove it and get it from remote database
-
     _pickSituation();
   }
 
@@ -59,18 +57,22 @@ class SpaceCubit extends Cubit<SpaceState> {
       emit(SpaceSituationPickedState());
     } else if (state is CardsTakenState) {
       if (state.currentUser) {
-        _addCardToCurrentPlayer();
+        emit(SpaceAddedCardToCurrentPlayerState());
       }
-    } else if (state is ChosenCardState) {
-      emit(SpaceCardChosenState());
+    } else if (state is GamePickedCardState) {
+      emit(SpaceCardPickedState());
     }
     // else if (state is SomePlayerReadyToNextRound) {
     //   _addCardToCurrentPlayer();
     // }
-    else if (state is VotedForCardState) {
+    else if (state is GameVotedForCardState) {
       emit(SpaceVotedForCardState());
-    } else if (state is FinishedGameState) {
+    } else if (state is GameSomePlayerReadyToNextRound) {
+      emit(SpaceReadyForNextRoundState());
+    } else if (state is GameFinishedState) {
       emit(SpaceGameFinishedState());
+    } else if (state is GameFailureState) {
+      emit(SpaceFailureState(state.error));
     }
   }
 
@@ -100,20 +102,12 @@ class SpaceCubit extends Cubit<SpaceState> {
         },
       );
     } catch (e) {
-      print("SpaceCubit - _pickSituation - e: $e");
-      emit(SpaceFailureState(e));
+      if (kDebugMode) {
+        print("SpaceCubit - _pickSituation - e: $e");
+      }
+      emit(SpaceFailureState("Something went wrong."));
     }
   }
-
-  // Future<void> _initialCards() async {
-  //   // todo: redo it to have unique cards
-  //   try {
-
-  //   } catch (e) {
-  //           print("SpaceCubit - _initialCard - e: $e");
-  //     emit(SpaceFailureState(e));
-  //   }
-  // }
 
   Future<void> nextRound() async {
     // todo: nextRound
@@ -121,14 +115,10 @@ class SpaceCubit extends Cubit<SpaceState> {
     try {
       emit(SpaceLoadingState());
 
-      final payload = VoteForNextRound(playerId: currentUser.id);
-
       await _gameCubit.gameChannel!.send(
         type: RealtimeListenTypes.broadcast,
-        event: "vote_for_next_round",
-        payload: {
-          "data_object": payload,
-        },
+        event: "next_round",
+        payload: {},
       );
     } catch (e) {
       print("SpaceCubit - nextRound - e: $e");
@@ -143,16 +133,20 @@ class SpaceCubit extends Cubit<SpaceState> {
 
       // todo: add card in db
 
-      final payload = _gameCubit.room!.currentPlayerCards
+      final pickedCard = _gameCubit.room!.currentPlayerCards
           .firstWhere((card) => card.cardId == cardId);
 
       await _gameCubit.gameChannel!.send(
         type: RealtimeListenTypes.broadcast,
-        event: "choose_card",
+        event: "pick_card",
         payload: {
-          "data_object": payload,
+          "object_data": pickedCard.toMap(),
         },
       );
+
+      pickedCard.isImagePicked = !pickedCard.isImagePicked;
+
+      _gameCubit.room!.addChosenCard(pickedCard);
     } catch (e) {
       print("SpaceCubit - chooseCard - e: $e");
       emit(SpaceFailureState(e));
@@ -162,9 +156,6 @@ class SpaceCubit extends Cubit<SpaceState> {
   Future<void> chooseSituation(String situationId) async {
     try {
       emit(SpaceLoadingState());
-      // todo: chooseSituation
-
-      // todo: add situation screen and choose situation from db
       final payload =
           Situation(id: situationId, description: "Skeleton situation").toMap();
 
@@ -186,11 +177,9 @@ class SpaceCubit extends Cubit<SpaceState> {
   Future<void> voteForCard(String cardId) async {
     try {
       emit(SpaceLoadingState());
-      // todo: voteForCard
-
       final payload = VoteForCard(
         playerId: currentUser.id,
-        cardId: "21412521523dgsh523",
+        cardId: cardId,
       ).toMap();
 
       await _gameCubit.gameChannel!.send(
@@ -202,25 +191,49 @@ class SpaceCubit extends Cubit<SpaceState> {
       );
     } catch (e) {
       if (kDebugMode) {
-        print("SpaceCubit - voteForCard - e: $e");
+        print("SpaceCubit - voteForCard - e: $e.");
       }
       emit(SpaceFailureState(e));
     }
   }
 
-  Future<void> _addCardToCurrentPlayer() async {
-    try {
-      emit(SpaceAddedCardToCurrentPlayer());
-    } catch (e) {
-      if (kDebugMode) {
-        print("SpaceCubit - _addCardToCurrentPlayer - e: $e");
-      }
-      emit(SpaceFailureState(e));
-    }
-  }
+  // Future<void> _addCardToCurrentPlayer() async {
+  //   try {
+  //     emit(SpaceAddedCardToCurrentPlayer());
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print("SpaceCubit - _addCardToCurrentPlayer - e: $e");
+  //     }
+  //     emit(SpaceFailureState(e));
+  //   }
+  // }
 
   Future<void> closeRoom() async {
     emit(SpaceGameDeletedState());
     _gameCubit.close;
   }
+
+  void readyForNextRound() async {
+    // todo: voteForNextRound
+    try {
+      emit(SpaceLoadingState());
+
+      await _gameCubit.gameChannel!.send(
+        type: RealtimeListenTypes.broadcast,
+        event: "ready_for_next_round",
+        payload: {
+          "data_object": {
+            "user_id": _authenticationCubit.currentUser!.id,
+          },
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print("SpaceCubit - voteForNextRound - e: $e.");
+      }
+      emit(SpaceFailureState(e));
+    }
+  }
+
+  void finishGame() {}
 }
