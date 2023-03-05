@@ -13,23 +13,37 @@ class GameSpaceBoardView extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return BlocBuilder<SpaceCubit, SpaceState>(
+      buildWhen: (previous, current) {
+        if (current is SpaceSituationPickedState) {
+          return true;
+        }
+        return false;
+      },
       builder: (context, state) {
         final spaceCubit = context.read<SpaceCubit>();
         final situation = spaceCubit.room!.currentSituation;
 
+        print("GameSpaceBoardView - situation: $situation");
+
         return SingleChildScrollView(
-          child: Column(
-            children: [
-              if (situation == null) ...[
-                Center(
-                  child: Text("Waiting for situation."),
-                ),
-              ] else ...[
-                Center(
-                  child: Text(situation.description),
-                ),
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: [
+                if (situation == null) ...[
+                  Center(
+                    child: Text("Waiting for situation."),
+                  ),
+                ] else ...[
+                  Center(
+                    child: Text(
+                      situation.description,
+                      style: textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         );
       },

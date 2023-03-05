@@ -41,13 +41,17 @@ class Room {
 
   List<Situation> get situationList => _situationList;
 
-  Situation? get currentSituation =>
-      _situationList.isNotEmpty ? _situationList.last : null;
-
   late int currentRoundNumber;
 
   late List<Situation> _pickedSituationList;
   List<Situation> get pickedSituationList => _pickedSituationList;
+
+  // Situation? get currentSituation =>
+  //     _pickedSituationList.isNotEmpty ? _pickedSituationList.last : null;
+  Situation? get currentSituation {
+    return _pickedSituationList.firstWhereIndexedOrNull(
+        (index, element) => index == currentRoundNumber);
+  }
 
   late final GameRound currentGameRound;
 
@@ -162,10 +166,10 @@ class Room {
 
   /// _getLastSituation() for internal using
   Situation? _getLastSituation() {
-    if (_situationList.isEmpty) {
+    if (_pickedSituationList.isEmpty) {
       throw GameException("There are no need situations.");
     } else {
-      return _situationList.last;
+      return _pickedSituationList.last;
     }
   }
 
@@ -179,18 +183,18 @@ class Room {
   }
 
   void addVotingResult(VoteForCard voteForCard) {
-    // todo: add voting result by situation id
-
     _getLastSituation()
         ?.cards
         .firstWhere((chosenCard) => chosenCard.cardId == voteForCard.cardId)
         .votesList
         .add(voteForCard);
+
+    players!.firstWhere((player) => player.id == voteForCard.playerId).points++;
   }
 
-  void pickSituation(String situationId) {
-    final pickedSituation =
-        _situationList.firstWhere((situation) => situation.id == situationId);
+  void pickSituation(Situation pickedSituation) {
+    // final pickedSituation =
+    //     _situationList.firstWhere((situation) => situation.id == situationId);
 
     _pickedSituationList.add(pickedSituation);
   }
@@ -210,8 +214,7 @@ class Room {
   List<Map<String, dynamic>> distributeCards({int? count}) {
     List<TakenCards> distributedCards = [];
 
-    final countCards =
-        count == null ? roomConfiguration.playerStartCardsCount : count;
+    final countCards = count ?? roomConfiguration.playerStartCardsCount;
 
     const start = 0;
 
@@ -231,12 +234,16 @@ class Room {
       distributedCards.add(takenCards);
     }
 
-    _availableCardIdList.removeRange(
-      start,
-      end,
-    );
+    // _availableCardIdList.removeRange(
+    //   start,
+    //   end,
+    // );
 
     return distributedCards.map((takenCards) => takenCards.toMap()).toList();
+  }
+
+  void currentGameRoundPickSituationId(String situationId) {
+    currentGameRound.pickedSituationId = situationId;
   }
 
   /// [currentGameRoundVoteForCard] in memory for support

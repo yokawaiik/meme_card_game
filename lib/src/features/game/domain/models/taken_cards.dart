@@ -10,7 +10,9 @@ class TakenCards {
 
   TakenCards.fromMap(Map<String, dynamic> data) {
     playerId = data["player_id"];
-    takenCardIdList = data["taken_card_id_list"];
+    takenCardIdList = (data["taken_card_id_list"] as List<dynamic>)
+        .map((item) => item.toString())
+        .toList();
   }
 
   Map<String, dynamic> toMap() {

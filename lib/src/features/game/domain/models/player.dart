@@ -16,7 +16,7 @@ class Player {
   late final bool isCurrentUser;
   late bool isCreator;
   late bool isConfirm;
-  late int? points;
+  late int points;
   late Map<String, dynamic>? additionalInfo;
 
   /// [userJoinIndex] only in player's memory

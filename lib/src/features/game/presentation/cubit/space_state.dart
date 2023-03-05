@@ -7,7 +7,10 @@ class SpaceInitialState extends SpaceState {}
 
 class SpaceSituationPickedState extends SpaceState {}
 
-class SpaceCardPickedState extends SpaceState {}
+class SpacePlayerPickedCardState extends SpaceState {
+  bool isCurrentUser;
+  SpacePlayerPickedCardState(this.isCurrentUser);
+}
 
 class SpaceVotedForCardState extends SpaceState {}
 

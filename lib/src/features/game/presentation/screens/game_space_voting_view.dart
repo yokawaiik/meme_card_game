@@ -49,6 +49,7 @@ class GameSpaceVotingView extends StatelessWidget {
             final card = currentSituation.cards[index];
 
             return InkWell(
+              key: Key(card.cardId),
               onTap: () => _openCard(context),
               child: Stack(
                 children: [

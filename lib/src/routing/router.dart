@@ -11,6 +11,7 @@ import 'package:meme_card_game/src/routing/middleware_guard_wrapper.dart';
 import '../features/auth/presentation/screens/auth_screen.dart';
 import '../features/auth/presentation/screens/error_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
+import '../features/game/presentation/screens/game_finished_screen.dart';
 import '../features/game/presentation/screens/game_space_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/game/presentation/screens/join_game_screen.dart';

@@ -24,7 +24,7 @@ class GameSpaceScreen extends StatefulWidget {
 
 class _GameSpaceScreenState extends State<GameSpaceScreen> {
   late final List<Widget> _views;
-  // late int _currentView;
+  late int _currentPage;
   late final PageController _pageViewController;
 
   // late final SpaceCubit _spaceCubit;
@@ -45,10 +45,11 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
         child: GameSpaceStatsView(),
       ),
     ];
-    // _currentView = 0;
     _pageViewController = PageController(
       initialPage: 0,
     );
+
+    _currentPage = 0;
 
     super.initState();
   }
@@ -62,162 +63,185 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
 
     return WillPopScope(
       onWillPop: () => _closeRoom(context),
-      child: Scaffold(
-        appBar: AppBar(
-          // leading: IconButton(
-          //   icon: Icon(Icons.close),
-          //   onPressed: () {
-          //     // todo: add logic here
-          //     // GoRouter.of(context).pop();
-          //     // _closeRoom(context);
-          //   },
-          // ),
-
-          title: const Text(
-            'Game space',
-          ),
-        ),
-        body: PageView(
-          controller: _pageViewController,
-          pageSnapping: false,
-          onPageChanged: _onViewChange,
-          children: _views,
-        ),
-        floatingActionButton: BlocBuilder<SpaceCubit, SpaceState>(
-          buildWhen: (previous, current) {
-            if (current is SpaceCardPickedState ||
-                current is SpaceGameFinishedState ||
-                current is SpaceLoadingState ||
-                current is SpaceSituationPickedState ||
-                current is SpaceVotedForCardState ||
-                current is SpaceNextRoundState ||
-                current is SpaceFailureState) {
-              return true;
-            }
-            return false;
-          },
-          builder: (context, state) {
-            // ? info notify player about mistake
-            if (state is SpaceFailureState) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.error.toString())),
-              );
-            }
-
-            final spaceCubit = context.read<SpaceCubit>();
-
-            late final void Function()? onPressedFloatingActionButton;
-            late final String buttonText;
-
-            // ? if situation wasn't chosen and necessary choose it
-            if (spaceCubit.room!.situationList.length !=
-                    spaceCubit.room!.currentRoundNumber &&
-                spaceCubit
-                    .room!.roomConfiguration.automaticSituationSelection &&
-                spaceCubit.room!.isCreatedByCurrentUser) {
-              onPressedFloatingActionButton = () {
-                // todo: realise pick situation by player
-                UnimplementedError("This feature wasn't realised.");
-              };
-              buttonText = "Pick situation";
-            }
-            // ?if situation was chosen and necessary to choose card
-            else if (spaceCubit.room!.currentGameRound.pickedCardId == null) {
-              onPressedFloatingActionButton = () {
-                _pageViewController.jumpToPage(1);
-              };
-              buttonText = "Pick card";
-            }
-
-            // ? if card was chosen and necessary to vote
-
-            else if (spaceCubit.room!.currentGameRound.votedCardId == null) {
-              onPressedFloatingActionButton = () {
-                _pageViewController.jumpToPage(2);
-              };
-              buttonText = "Vote for card";
-            }
-            // ? if card was chosen and necessary player ready for the next round
-
-            else if (spaceCubit.room!.currentGameRound.isReadyForNextRound ==
-                false) {
-              // ? vote for next round
-              onPressedFloatingActionButton = () {
-                spaceCubit.readyForNextRound();
-              };
-              buttonText = "Ready for next round";
-            }
-
-            if (spaceCubit.room!.currentRoundPlayersReadyCount >
-                spaceCubit.room!.players!.length) {
-              onPressedFloatingActionButton = () {
-                spaceCubit.nextRound();
-              };
-              buttonText = "Next round";
-            } else if (spaceCubit.room!.currentGameRound ==
-                spaceCubit.room!.pickedSituationList) {
-              onPressedFloatingActionButton = () {
-                spaceCubit.finishGame();
-              };
-              buttonText = "Finish game";
-            } else {
-              onPressedFloatingActionButton = null;
-              buttonText = "Wait for others";
-            }
-
-            //todo: if round end creator have to press to finish
-
-            // // todo: if game ended and need to look at stats
-
-            return FloatingActionButton.extended(
-              onPressed: onPressedFloatingActionButton,
-              label: Text(buttonText),
-              icon: Icon(Icons.image_rounded),
+      child: BlocListener<SpaceCubit, SpaceState>(
+        listener: (context, state) {
+          if (state is SpaceFailureState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.error.toString())),
             );
-          },
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        bottomNavigationBar: BottomNavigationBar(
-          onTap: _onViewChange,
-          items: const [
-            BottomNavigationBarItem(
-              label: "Board",
-              icon: Icon(
-                Icons.games_rounded,
-              ),
-            ),
-
-            // todo: available only for creator if works non-generation situation mode
-            // BottomNavigationBarItem(
-            //   label: "Situations",
-            //   icon: Icon(
-            //     Icons.list_alt_rounded,
-            //   ),
+          }
+        },
+        listenWhen: (previous, current) {
+          if (current is SpaceFailureState) {
+            return true;
+          }
+          return false;
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            // leading: IconButton(
+            //   icon: Icon(Icons.close),
+            //   onPressed: () {
+            //     // todo: add logic here
+            //     // GoRouter.of(context).pop();
+            //     // _closeRoom(context);
+            //   },
             // ),
 
-            BottomNavigationBarItem(
-              label: "Cards",
-              icon: Icon(
-                Icons.sentiment_satisfied_alt_outlined,
-              ),
+            title: const Text(
+              'Game space',
             ),
+          ),
+          body: PageView(
+            controller: _pageViewController,
+            pageSnapping: false,
+            onPageChanged: _onViewChange,
+            children: _views,
+          ),
+          floatingActionButton: BlocBuilder<SpaceCubit, SpaceState>(
+            buildWhen: (previous, current) {
+              if (current is SpacePlayerPickedCardState &&
+                  current.isCurrentUser == false) {
+                return false;
+              }
+              if (current is SpaceGameFinishedState ||
+                  current is SpaceLoadingState ||
+                  current is SpaceSituationPickedState ||
+                  current is SpaceVotedForCardState ||
+                  current is SpaceNextRoundState) {
+                return true;
+              }
+              return false;
+            },
+            builder: (context, state) {
+              // ? info notify player about mistake
 
-            BottomNavigationBarItem(
-              label: "Stats",
-              icon: Icon(
-                Icons.leaderboard,
+              final spaceCubit = context.read<SpaceCubit>();
+
+              late final void Function()? onPressedFloatingActionButton;
+              late final String buttonText;
+
+              // ? if situation wasn't chosen and necessary choose it
+
+              if (spaceCubit.room!.isCreatedByCurrentUser &&
+                  spaceCubit.room!.currentGameRound.pickedSituationId == null) {
+                if (spaceCubit
+                    .room!.roomConfiguration.automaticSituationSelection) {
+                  onPressedFloatingActionButton = () {
+                    spaceCubit.pickSituation();
+                  };
+                  buttonText = "Auto pick situation";
+                } else {
+                  // todo: implements
+                  throw UnimplementedError();
+
+                  buttonText = "Pick situation";
+                }
+              }
+
+              // ?if situation was chosen and necessary to choose card
+              else if (spaceCubit.room!.currentGameRound.pickedCardId == null) {
+                onPressedFloatingActionButton = () {
+                  _pageViewController.jumpToPage(1);
+                };
+                buttonText = "Pick card";
+              }
+
+              // ? if card was chosen and necessary to vote
+
+              else if (spaceCubit.room!.currentGameRound.votedCardId == null) {
+                onPressedFloatingActionButton = () {
+                  _pageViewController.jumpToPage(2);
+                };
+                buttonText = "Vote for card";
+              }
+              // ? if card was chosen and necessary player ready for the next round
+
+              else if (spaceCubit.room!.currentGameRound.isReadyForNextRound ==
+                  false) {
+                // ? vote for next round
+                onPressedFloatingActionButton = () {
+                  spaceCubit.readyForNextRound();
+                };
+                buttonText = "Ready for next round";
+              } else if (spaceCubit.room!.currentRoundPlayersReadyCount >
+                  spaceCubit.room!.players!.length) {
+                onPressedFloatingActionButton = () {
+                  spaceCubit.nextRound();
+                };
+                buttonText = "Next round";
+              } else if (spaceCubit.room!.currentRoundNumber ==
+                  spaceCubit.room!.pickedSituationList.length) {
+                // ? info: if round end creator have to press to finish
+                onPressedFloatingActionButton = () {
+                  spaceCubit.finishGame();
+                };
+                buttonText = "Finish game";
+              } else {
+                onPressedFloatingActionButton = null;
+                buttonText = "Wait for others";
+              }
+
+              // // todo: if game ended and need to look at stats
+
+              return FloatingActionButton.extended(
+                onPressed: onPressedFloatingActionButton,
+                label: Text(buttonText),
+                icon: Icon(Icons.image_rounded),
+              );
+            },
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _currentPage,
+            onDestinationSelected: _onViewChange,
+            destinations: [
+              NavigationDestination(
+                icon: Icon(
+                  Icons.games_rounded,
+                ),
+                label: "Board",
               ),
-            ),
-          ],
+              //     // todo: available only for creator if works non-generation situation mode
+
+              //     // BottomNavigationBarItem(
+              //     //   label: "Situations",
+              //     //   icon: Icon(
+              //     //     Icons.list_alt_rounded,
+              //     //   ),
+              //     // ),
+
+              NavigationDestination(
+                label: "My cards",
+                icon: Icon(
+                  Icons.sentiment_satisfied_alt_outlined,
+                ),
+              ),
+
+              NavigationDestination(
+                label: "Vote",
+                icon: Icon(
+                  Icons.group,
+                ),
+              ),
+
+              NavigationDestination(
+                label: "Stats",
+                icon: Icon(
+                  Icons.leaderboard,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _onViewChange(value) {
+  void _onViewChange(int value) {
     setState(() {
-      // _currentView = value;
       _pageViewController.jumpToPage(value);
+      _currentPage = value;
     });
   }
 

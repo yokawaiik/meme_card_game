@@ -41,13 +41,15 @@ Future<void> uploadCardsScript({bool isRelease = false}) async {
 
     for (var imageFile in imageFiles) {
       try {
+        final imagePath =
+            "${supabase_constants.pathToCardsDirectory}/${imageFile.uri.pathSegments.last}";
+
         final uploadedImagePath = await storageBucket.upload(
-          "${supabase_constants.pathToCardsDirectory}/${imageFile.uri.pathSegments.last}",
+          imagePath,
           imageFile,
         );
 
-        final uploadedImagePublicUrl =
-            storageBucket.getPublicUrl(uploadedImagePath);
+        final uploadedImagePublicUrl = storageBucket.getPublicUrl(imagePath);
 
         final card = Card(
           createdBy: client.auth.currentUser!.id,

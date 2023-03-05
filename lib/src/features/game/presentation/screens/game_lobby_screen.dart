@@ -6,6 +6,7 @@ import 'package:meme_card_game/src/features/game/presentation/cubit/game_cubit.d
 import 'package:flutter/services.dart';
 
 import 'package:collection/collection.dart';
+import 'package:meme_card_game/src/features/game/widgets/player_list_tile.dart';
 
 import "../../../../routing/routes_constants.dart" as routes_constants;
 
@@ -100,33 +101,23 @@ class GameLobbyScreen extends StatelessWidget {
                           itemBuilder: (_, index) {
                             final player = players[index];
 
-                            return Padding(
-                              key: Key(player.id),
-                              padding: const EdgeInsets.symmetric(vertical: 5),
-                              child: ListTile(
-                                // todo: add kick user
-                                onTap: () => _showPlayerProfile(context),
-                                leading: CircleAvatar(
-                                  backgroundColor: player.backgroundColor,
-                                  foregroundColor: player.color,
-                                  child: const Icon(Icons.person_4),
-                                ),
-                                trailing: Checkbox(
-                                  value: player.isConfirm,
-                                  onChanged: null,
-                                ),
-                                title: Text(
-                                  player.login,
-                                  overflow: TextOverflow.fade,
-                                  maxLines: 1,
-                                ),
-                              ),
+                            return PlayerListTile(
+                              id: player.id,
+                              login: player.login,
+                              backgroundColor: player.backgroundColor,
+                              color: player.color,
+                              points: player.points,
+                              isConfirm: player.isConfirm,
+                              onTap: () => _showPlayerProfile(context),
                             );
                           },
                         ),
                       ],
                     );
                   },
+                ),
+                SizedBox(
+                  height: 10,
                 ),
                 BlocBuilder<GameCubit, GameState>(
                     buildWhen: (previous, current) {

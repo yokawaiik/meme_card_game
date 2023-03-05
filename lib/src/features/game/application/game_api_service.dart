@@ -153,10 +153,14 @@ class GameApiService {
   }
 
   // todo: check getCards
-  static Future<List<GameCard>?> getCards(List<String> cardsIdList) async {
+  static Future<List<GameCard>?> getCards(
+    List<String> cardsIdList,
+    // int roundNumber,
+  ) async {
     try {
       final rawCards = await _client
           .from("cards")
+          // .select<List<Map<String, dynamic>>>()
           .select<List<Map<String, dynamic>>>()
           .in_('id', cardsIdList);
 
@@ -164,12 +168,17 @@ class GameApiService {
         throw SupabaseException(null, "Cards wasn't found.");
       }
 
-      final card = rawCards
-          .map((rawCard) =>
-              GameCard.fromMap(rawCard, _client.auth.currentUser!.id))
+      final cards = rawCards
+          .map(
+            (rawCard) => GameCard.fromDatabaseMap(
+              rawCard,
+              // roundNumber,
+              _client.auth.currentUser!.id,
+            ),
+          )
           .toList();
 
-      return card;
+      return cards;
     } catch (e) {
       if (kDebugMode) {
         print("GameApiService - getCards - e: $e");

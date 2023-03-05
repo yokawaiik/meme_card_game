@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubit/space_cubit.dart';
+import 'package:meme_card_game/src/features/game/domain/models/game_card.dart';
 
 class GameSpacePlayerCardView extends StatelessWidget {
   const GameSpacePlayerCardView({Key? key}) : super(key: key);
@@ -14,14 +15,26 @@ class GameSpacePlayerCardView extends StatelessWidget {
 
     return BlocBuilder<SpaceCubit, SpaceState>(
       buildWhen: (previous, current) {
-        if (current is SpaceNextRoundState ||
-            current is SpaceCardPickedState ||
+        if (current is SpaceLoadingState ||
+            current is SpaceNextRoundState ||
+            current is SpacePlayerPickedCardState ||
             current is SpaceSituationPickedState ||
-            current is SpaceAddedCardToCurrentPlayerState) {}
+            current is SpaceAddedCardToCurrentPlayerState) {
+          return true;
+        }
         return false;
       },
       builder: (context, state) {
         final spaceCubit = context.read<SpaceCubit>();
+
+        // final isSpaceSituationPickedState = state is SpaceSituationPickedState;
+
+        // final pickedCardId = spaceCubit.room!.currentGameRound.pickedCardId;
+
+        // print(
+        //     'GameSpacePlayerCardView - currentPlayerCards: ${spaceCubit.room!.currentPlayerCards.length}');
+
+        // final isSpaceCardPickedState = state is SpaceCardPickedState;
 
         return CarouselSlider.builder(
           options: CarouselOptions(
@@ -38,21 +51,21 @@ class GameSpacePlayerCardView extends StatelessWidget {
               children: [
                 Image.network(
                   gameCard.imageUrl,
-                  fit: BoxFit.cover,
+                  // fit: BoxFit.cover,
+                  fit: BoxFit.fill,
+                  height: double.infinity,
                 ),
-                Positioned(
-                  bottom: 20,
-                  right: 20,
-                  child: FilledButton.tonalIcon(
-                    // todo: handle if image has already been chosen
-                    onPressed: gameCard.isImagePicked
-                        ? null
-                        : () => spaceCubit.chooseCard(gameCard.cardId),
-                    icon: Icon(Icons.done),
-                    label:
-                        Text(gameCard.isImagePicked ? "Chosen" : "Pick image"),
+                if (spaceCubit.room!.currentSituation != null)
+                  Positioned(
+                    top: 20,
+                    right: 20,
+                    child: _buildPickButton(
+                      callback: () => spaceCubit.pickCard(gameCard.cardId),
+                      pickedCardId:
+                          spaceCubit.room!.currentGameRound.pickedCardId,
+                      cardId: gameCard.cardId,
+                    ),
                   ),
-                ),
               ],
             );
           },
@@ -61,5 +74,30 @@ class GameSpacePlayerCardView extends StatelessWidget {
     );
   }
 
-  _pickImage(BuildContext context) {}
+  FilledButton _buildPickButton({
+    required String cardId,
+    required String? pickedCardId,
+    required void Function()? callback,
+  }) {
+    late final String labelText;
+    late final void Function()? onPressed;
+
+    if (cardId == pickedCardId) {
+      labelText = "This card picked";
+      onPressed = null;
+    } else if (pickedCardId == null) {
+      labelText = "Pick card";
+      onPressed = callback;
+    } else {
+      // ? pickedCardId != null and cardId != pickedCardId
+      labelText = "Already picked";
+      onPressed = null;
+    }
+
+    return FilledButton.tonalIcon(
+      onPressed: onPressed,
+      icon: Icon(Icons.done),
+      label: Text(labelText),
+    );
+  }
 }

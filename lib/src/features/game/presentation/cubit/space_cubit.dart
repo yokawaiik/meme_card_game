@@ -39,8 +39,6 @@ class SpaceCubit extends Cubit<SpaceState> {
 
     _streamSubscription =
         gameCubit.stream.listen(_streamSubscriptionForGameCubit);
-
-    _pickSituation();
   }
 
   void _streamSubscriptionForGameCubit(GameState state) {
@@ -59,8 +57,8 @@ class SpaceCubit extends Cubit<SpaceState> {
       if (state.currentUser) {
         emit(SpaceAddedCardToCurrentPlayerState());
       }
-    } else if (state is GamePickedCardState) {
-      emit(SpaceCardPickedState());
+    } else if (state is GamePlayerPickedCardState) {
+      emit(SpacePlayerPickedCardState(state.isCurrentUser));
     }
     // else if (state is SomePlayerReadyToNextRound) {
     //   _addCardToCurrentPlayer();
@@ -73,6 +71,18 @@ class SpaceCubit extends Cubit<SpaceState> {
       emit(SpaceGameFinishedState());
     } else if (state is GameFailureState) {
       emit(SpaceFailureState(state.error));
+    }
+  }
+
+  Future<void> pickSituation([String? situationId]) async {
+    try {
+      emit(SpaceLoadingState());
+      await _pickSituation(situationId);
+    } catch (e) {
+      if (kDebugMode) {
+        print("SpaceCubit - pickSituation - e: $e");
+      }
+      emit(SpaceFailureState("Something went wrong when pick situation."));
     }
   }
 
@@ -126,7 +136,7 @@ class SpaceCubit extends Cubit<SpaceState> {
     }
   }
 
-  Future<void> chooseCard(String cardId) async {
+  Future<void> pickCard(String cardId) async {
     try {
       // todo: chooseCard
       emit(SpaceLoadingState());
@@ -140,7 +150,7 @@ class SpaceCubit extends Cubit<SpaceState> {
         type: RealtimeListenTypes.broadcast,
         event: "pick_card",
         payload: {
-          "object_data": pickedCard.toMap(),
+          "data_object": pickedCard.toMap(),
         },
       );
 
@@ -148,31 +158,31 @@ class SpaceCubit extends Cubit<SpaceState> {
 
       _gameCubit.room!.addChosenCard(pickedCard);
     } catch (e) {
-      print("SpaceCubit - chooseCard - e: $e");
+      print("SpaceCubit - pickCard - e: $e");
       emit(SpaceFailureState(e));
     }
   }
 
-  Future<void> chooseSituation(String situationId) async {
-    try {
-      emit(SpaceLoadingState());
-      final payload =
-          Situation(id: situationId, description: "Skeleton situation").toMap();
+  // Future<void> chooseSituation(String situationId) async {
+  //   try {
+  //     emit(SpaceLoadingState());
+  //     final payload =
+  //         Situation(id: situationId, description: "Skeleton situation").toMap();
 
-      await _gameCubit.gameChannel!.send(
-        type: RealtimeListenTypes.broadcast,
-        event: "choose_situation",
-        payload: {
-          "data_object": payload,
-        },
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        print("SpaceCubit - chooseSituation - e: $e");
-      }
-      emit(SpaceFailureState(e));
-    }
-  }
+  //     await _gameCubit.gameChannel!.send(
+  //       type: RealtimeListenTypes.broadcast,
+  //       event: "choose_situation",
+  //       payload: {
+  //         "data_object": payload,
+  //       },
+  //     );
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print("SpaceCubit - chooseSituation - e: $e");
+  //     }
+  //     emit(SpaceFailureState(e));
+  //   }
+  // }
 
   Future<void> voteForCard(String cardId) async {
     try {
