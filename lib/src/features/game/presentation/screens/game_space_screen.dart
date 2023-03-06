@@ -53,14 +53,9 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
 
     super.initState();
   }
-  // todo: slider with cards in bottom modal sheet
-  // todo: main screen has situation with description and in content-part chosen cards by players
 
   @override
   Widget build(BuildContext context) {
-    // final colorScheme = Theme.of(context).colorScheme;
-    // final textTheme = Theme.of(context).textTheme;
-
     return WillPopScope(
       onWillPop: () => _closeRoom(context),
       child: BlocListener<SpaceCubit, SpaceState>(
@@ -70,9 +65,12 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
               SnackBar(content: Text(state.error.toString())),
             );
           }
+          if (state is SpaceNextRoundState) {
+            _onViewChange(0);
+          }
         },
         listenWhen: (previous, current) {
-          if (current is SpaceFailureState) {
+          if (current is SpaceFailureState || current is SpaceNextRoundState) {
             return true;
           }
           return false;
@@ -100,14 +98,13 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
           ),
           floatingActionButton: BlocBuilder<SpaceCubit, SpaceState>(
             buildWhen: (previous, current) {
-              if (current is SpacePlayerPickedCardState &&
-                  current.isCurrentUser == false) {
-                return false;
-              }
               if (current is SpaceGameFinishedState ||
+                  (current is SpacePlayerPickedCardState &&
+                      current.isCurrentUser == true) ||
                   current is SpaceLoadingState ||
                   current is SpaceSituationPickedState ||
                   current is SpaceVotedForCardState ||
+                  current is SpaceReadyForNextRoundState ||
                   current is SpaceNextRoundState) {
                 return true;
               }
@@ -123,7 +120,18 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
 
               // ? if situation wasn't chosen and necessary choose it
 
-              if (spaceCubit.room!.isCreatedByCurrentUser &&
+              if (state is SpaceLoadingState) {
+                onPressedFloatingActionButton = null;
+                buttonText = "Waiting";
+              } else if (spaceCubit.room!.currentRoundNumber ==
+                  spaceCubit.room!.roomConfiguration.roundsCount) {
+                // ? info: if round end creator have to press to finish
+                onPressedFloatingActionButton = () {
+                  spaceCubit.finishGame();
+                  // _onViewChange(0);
+                };
+                buttonText = "Finish game";
+              } else if (spaceCubit.room!.isCreatedByCurrentUser &&
                   spaceCubit.room!.currentGameRound.pickedSituationId == null) {
                 if (spaceCubit
                     .room!.roomConfiguration.automaticSituationSelection) {
@@ -142,7 +150,7 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
               // ?if situation was chosen and necessary to choose card
               else if (spaceCubit.room!.currentGameRound.pickedCardId == null) {
                 onPressedFloatingActionButton = () {
-                  _pageViewController.jumpToPage(1);
+                  _onViewChange(1);
                 };
                 buttonText = "Pick card";
               }
@@ -151,7 +159,7 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
 
               else if (spaceCubit.room!.currentGameRound.votedCardId == null) {
                 onPressedFloatingActionButton = () {
-                  _pageViewController.jumpToPage(2);
+                  _onViewChange(2);
                 };
                 buttonText = "Vote for card";
               }
@@ -162,23 +170,21 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
                 // ? vote for next round
                 onPressedFloatingActionButton = () {
                   spaceCubit.readyForNextRound();
+                  _onViewChange(3);
                 };
                 buttonText = "Ready for next round";
-              } else if (spaceCubit.room!.currentRoundPlayersReadyCount >
+              } else if (spaceCubit.room!.currentRoundPlayersReadyCount >=
                   spaceCubit.room!.players!.length) {
                 onPressedFloatingActionButton = () {
                   spaceCubit.nextRound();
+                  _onViewChange(0);
                 };
                 buttonText = "Next round";
-              } else if (spaceCubit.room!.currentRoundNumber ==
-                  spaceCubit.room!.pickedSituationList.length) {
-                // ? info: if round end creator have to press to finish
-                onPressedFloatingActionButton = () {
-                  spaceCubit.finishGame();
-                };
-                buttonText = "Finish game";
               } else {
-                onPressedFloatingActionButton = null;
+                onPressedFloatingActionButton = () {
+                  _onViewChange(3);
+                };
+
                 buttonText = "Wait for others";
               }
 
@@ -239,11 +245,32 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
   }
 
   void _onViewChange(int value) {
+    print("_onViewChange value: $value");
+
+    // _pageViewController.animateToPage(
+    //   value,
+    //   duration: Duration(milliseconds: 100),
+    //   curve: Curves.easeOutQuad,
+    // );
+
+    _pageViewController.jumpToPage(value);
+
     setState(() {
-      _pageViewController.jumpToPage(value);
       _currentPage = value;
     });
   }
+
+  // Future<void> _onDestinationSelected(int value) async {
+  //   // await _pageViewController.animateToPage(
+  //   //   value,
+  //   //   duration: Duration(milliseconds: 100),
+  //   //   curve: Curves.easeOutQuad,
+  //   // );
+
+  //   setState(() {
+  //     _currentPage = value;
+  //   });
+  // }
 
   Future<bool> _closeRoom(BuildContext context) async {
     try {
@@ -290,7 +317,6 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
 
       // ? it's necessary because if return true and then use router will be exception
     } catch (e) {
-      print("e : $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Something went wrong."),
@@ -300,66 +326,4 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
       return false;
     }
   }
-
-  // void _chooseCard(BuildContext context) async {
-  //   // todo: _chooseCard
-  //   final colorScheme = Theme.of(context).colorScheme;
-  //   final textTheme = Theme.of(context).textTheme;
-
-  //   await showModalBottomSheet(
-  //     context: context,
-  //     builder: (context) => Column(
-  //       children: [
-  //         Padding(
-  //           padding: EdgeInsets.only(top: 10, bottom: 10, right: 10, left: 15),
-  //           child: Row(
-  //             mainAxisAlignment: MainAxisAlignment.end,
-  //             children: [
-  //               Text(
-  //                 "Choose a card",
-  //                 // style: textTheme.headlineSmall,
-  //                 style: textTheme.titleLarge,
-  //               ),
-  //               Spacer(),
-  //               IconButton(
-  //                 onPressed: () {
-  //                   GoRouter.of(context).pop();
-  //                 },
-  //                 icon: Icon(Icons.close),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         CarouselSlider.builder(
-  //           options: CarouselOptions(
-  //             height: 300,
-  //             viewportFraction: 1,
-  //             enableInfiniteScroll: false,
-  //           ),
-  //           itemCount: 10, // todo: change it
-  //           itemBuilder: (context, index, realIndex) {
-  //             return Padding(
-  //               padding: const EdgeInsets.symmetric(
-  //                 horizontal: 5,
-  //               ),
-  //               child: Container(
-  //                 color: colorScheme.secondaryContainer,
-  //                 child: Center(
-  //                   child: Icon(
-  //                     Icons.image,
-  //                     size: 100,
-  //                   ),
-  //                 ),
-  //               ),
-  //             );
-  //           },
-  //         ),
-  //         SizedBox(
-  //           height: 10,
-  //         ),
-  //         // Text("Choose a card")
-  //       ],
-  //     ),
-  //   );
-  // }
 }

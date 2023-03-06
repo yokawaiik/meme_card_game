@@ -48,10 +48,9 @@ class GameCard {
     String? currentUserId,
   ) {
     userId = data["user_id"];
-    // roundNumber = data["round_number"];
     cardId = data["card_id"];
     votesList = [];
-    isCurrentUser = userId == currentUserId ? true : false;
+    isCurrentUser = userId == currentUserId;
     isImagePicked = false;
     imageUrl = data["image_url"];
   }

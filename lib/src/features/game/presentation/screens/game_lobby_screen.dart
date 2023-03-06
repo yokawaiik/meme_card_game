@@ -45,8 +45,9 @@ class GameLobbyScreen extends StatelessWidget {
                         Text(
                           "Name: ${room.title}",
                           style: textTheme.titleLarge,
-                          softWrap: true,
+                          // softWrap: true,
                           overflow: TextOverflow.fade,
+                          maxLines: 2,
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,

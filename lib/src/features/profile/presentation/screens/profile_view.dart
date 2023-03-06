@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meme_card_game/src/features/auth/presentation/cubit/authentication_cubit.dart';
 
+import '../../../../common_widgets/full_image_avatar.dart';
 import '../../../../routing/routes_constants.dart' as routes_constants;
 
 class ProfileView extends StatelessWidget {
@@ -17,45 +18,48 @@ class ProfileView extends StatelessWidget {
 
     final authCubit = context.read<AuthenticationCubit>();
 
+    final userBackgroundColor = authCubit.currentUser?.backgroundColor;
+    final userForegroundColor = authCubit.currentUser?.color;
+    final appbarBackgroundColor = colorScheme.secondaryContainer;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profile info"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            tooltip: 'Edit info',
-            onPressed: () => _editProfileInfo(context),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.edit),
+        //     tooltip: 'Edit info',
+        //     onPressed: () => _editProfileInfo(context),
+        //   ),
+        // ],
         elevation: 0,
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Padding(
-                // color: colorScheme.secondaryContainer,
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: size.height / 3,
-                  child: CircleAvatar(
-                    radius: 50,
-                    child: Icon(
-                      Icons.person_4,
-                      size: 150,
-                      color: colorScheme.onSecondaryContainer,
-                    ),
-                  ),
+              Center(
+                child: FullImageAvatar(
+                  emptyImageContainerColor: appbarBackgroundColor,
+                  iconData: Icons.person_4,
+                  avatarBackgroundColor: userBackgroundColor,
+                  avatarForegroundColor: userForegroundColor,
+                  imageUrl: authCubit.currentUser?.imageUrl,
                 ),
               ),
+              SizedBox(
+                height: 10,
+              ),
               Text(
-                "@${authCubit.currentUser!.login}",
+                "Player name: @${authCubit.currentUser!.login}",
                 style: const TextStyle(
                   // fontSize: textTheme.bodyMedium?.fontSize,
                   fontSize: 18,
                 ),
+                softWrap: true,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

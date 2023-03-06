@@ -42,9 +42,7 @@ class SpaceCubit extends Cubit<SpaceState> {
   }
 
   void _streamSubscriptionForGameCubit(GameState state) {
-    // if (state is LoadingGameState) {
-    //   emit(LoadingSpaceState());
-    // }
+    print('_streamSubscriptionForGameCubit - state: $state');
     if (state is PlayerLeftRoomState) {
       emit(SpacePlayerLeftState());
     } else if (state is LeftRoomState) {
@@ -59,14 +57,12 @@ class SpaceCubit extends Cubit<SpaceState> {
       }
     } else if (state is GamePlayerPickedCardState) {
       emit(SpacePlayerPickedCardState(state.isCurrentUser));
-    }
-    // else if (state is SomePlayerReadyToNextRound) {
-    //   _addCardToCurrentPlayer();
-    // }
-    else if (state is GameVotedForCardState) {
+    } else if (state is GameVotedForCardState) {
       emit(SpaceVotedForCardState());
-    } else if (state is GameSomePlayerReadyToNextRound) {
+    } else if (state is GameSomePlayerReadyForNextRound) {
       emit(SpaceReadyForNextRoundState());
+    } else if (state is GameNextRoundState) {
+      emit(SpaceNextRoundState());
     } else if (state is GameFinishedState) {
       emit(SpaceGameFinishedState());
     } else if (state is GameFailureState) {
@@ -155,8 +151,6 @@ class SpaceCubit extends Cubit<SpaceState> {
       );
 
       pickedCard.isImagePicked = !pickedCard.isImagePicked;
-
-      _gameCubit.room!.addChosenCard(pickedCard);
     } catch (e) {
       print("SpaceCubit - pickCard - e: $e");
       emit(SpaceFailureState(e));
@@ -245,5 +239,24 @@ class SpaceCubit extends Cubit<SpaceState> {
     }
   }
 
-  void finishGame() {}
+  void finishGame() async {
+    try {
+      emit(SpaceLoadingState());
+
+      await _gameCubit.gameChannel!.send(
+        type: RealtimeListenTypes.broadcast,
+        event: "finish_game",
+        payload: {
+          "data_object": {
+            "user_id": _authenticationCubit.currentUser!.id,
+          },
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print("SpaceCubit - finishGame - e: $e.");
+      }
+      emit(SpaceFailureState(e));
+    }
+  }
 }

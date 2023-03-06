@@ -181,6 +181,7 @@ final router = GoRouter(
         ),
       ],
     ),
+    // todo: redo it
     GoRoute(
       name: routes_constants.editProfile,
       path: routes_constants.editProfilePath,

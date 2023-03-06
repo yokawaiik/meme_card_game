@@ -15,9 +15,9 @@ class GameSpacePlayerCardView extends StatelessWidget {
 
     return BlocBuilder<SpaceCubit, SpaceState>(
       buildWhen: (previous, current) {
-        if (current is SpaceLoadingState ||
+        if ((current is SpacePlayerPickedCardState && current.isCurrentUser) ||
+            current is SpaceLoadingState ||
             current is SpaceNextRoundState ||
-            current is SpacePlayerPickedCardState ||
             current is SpaceSituationPickedState ||
             current is SpaceAddedCardToCurrentPlayerState) {
           return true;
@@ -27,23 +27,13 @@ class GameSpacePlayerCardView extends StatelessWidget {
       builder: (context, state) {
         final spaceCubit = context.read<SpaceCubit>();
 
-        // final isSpaceSituationPickedState = state is SpaceSituationPickedState;
-
-        // final pickedCardId = spaceCubit.room!.currentGameRound.pickedCardId;
-
-        // print(
-        //     'GameSpacePlayerCardView - currentPlayerCards: ${spaceCubit.room!.currentPlayerCards.length}');
-
-        // final isSpaceCardPickedState = state is SpaceCardPickedState;
-
         return CarouselSlider.builder(
           options: CarouselOptions(
             height: double.infinity,
             viewportFraction: 1,
             enableInfiniteScroll: false,
           ),
-          itemCount:
-              spaceCubit.room!.currentPlayerCards.length, // todo: change it
+          itemCount: spaceCubit.room!.currentPlayerCards.length,
           itemBuilder: (context, index, realIndex) {
             final gameCard = spaceCubit.room!.currentPlayerCards[index];
 
@@ -51,9 +41,9 @@ class GameSpacePlayerCardView extends StatelessWidget {
               children: [
                 Image.network(
                   gameCard.imageUrl,
-                  // fit: BoxFit.cover,
                   fit: BoxFit.fill,
                   height: double.infinity,
+                  width: double.infinity,
                 ),
                 if (spaceCubit.room!.currentSituation != null)
                   Positioned(

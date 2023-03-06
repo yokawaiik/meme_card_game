@@ -7,7 +7,7 @@ class GameFinishedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // todo: layout for this screen
+    // todo: layout for GameFinishedScreen screen
     return Scaffold(
       appBar: AppBar(
         title: Text("Results"),

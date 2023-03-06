@@ -46,8 +46,6 @@ class Room {
   late List<Situation> _pickedSituationList;
   List<Situation> get pickedSituationList => _pickedSituationList;
 
-  // Situation? get currentSituation =>
-  //     _pickedSituationList.isNotEmpty ? _pickedSituationList.last : null;
   Situation? get currentSituation {
     return _pickedSituationList.firstWhereIndexedOrNull(
         (index, element) => index == currentRoundNumber);
@@ -66,7 +64,6 @@ class Room {
     required this.createdBy,
     List<Player>? players,
     this.isCreatedByCurrentUser = false,
-    // this.status = GameStatus.lobby,
     RoomConfiguration? roomConfiguration,
     required List<String>? availableCardIdList,
   }) {
@@ -92,7 +89,6 @@ class Room {
     createdBy = data['created_by'];
     isCreatedByCurrentUser = createdBy == currentUserId;
     this.players = players ?? [];
-    // status = data['game_status'] ?? GameStatus.lobby;
     roomConfiguration = data['room_configuration'] == null
         ? RoomConfiguration.fromMap(data['room_configuration'])
         : RoomConfiguration();
@@ -113,7 +109,6 @@ class Room {
       "id": id,
       "title": title,
       "created_by": createdBy,
-      // "game_status": status.index,
       "room_configuration": roomConfiguration.toMap(),
       "available_card_id_list": _availableCardIdList,
     };
@@ -154,10 +149,6 @@ class Room {
     confirmedPlayer.isConfirm = playerConfirmation.isConfirm;
   }
 
-  // void setStatus(GameStatus started) {
-  //   status = started;
-  // }
-
   void addSituation(
     Situation situation,
   ) {
@@ -167,14 +158,14 @@ class Room {
   /// _getLastSituation() for internal using
   Situation? _getLastSituation() {
     if (_pickedSituationList.isEmpty) {
-      throw GameException("There are no need situations.");
+      throw GameException("There are not any situations.");
     } else {
       return _pickedSituationList.last;
     }
   }
 
   /// addChosenCard() add ChosenCard to last situation
-  void addChosenCard(
+  void addPickedCard(
     GameCard card,
   ) {
     // todo: check  chosen card
@@ -193,9 +184,6 @@ class Room {
   }
 
   void pickSituation(Situation pickedSituation) {
-    // final pickedSituation =
-    //     _situationList.firstWhere((situation) => situation.id == situationId);
-
     _pickedSituationList.add(pickedSituation);
   }
 
@@ -208,7 +196,8 @@ class Room {
   }
 
   void removeCardFromAvailableCardIdList(String cardId) {
-    _availableCardIdList.removeWhere((cardId) => cardId == cardId);
+    _availableCardIdList
+        .removeWhere((availableCardId) => availableCardId == cardId);
   }
 
   List<Map<String, dynamic>> distributeCards({int? count}) {
@@ -218,13 +207,10 @@ class Room {
 
     const start = 0;
 
-    // final end = roomConfiguration.playerStartCardsCount * players!.length;
     final end = countCards * players!.length;
 
-    final cards = _availableCardIdList
-        .sublist(start, end)
-        .slices(roomConfiguration.playerStartCardsCount)
-        .toList();
+    final cards =
+        _availableCardIdList.sublist(start, end).slices(countCards).toList();
 
     for (var i = 0; i < players!.length; i++) {
       final takenCards = TakenCards(
@@ -233,11 +219,6 @@ class Room {
       );
       distributedCards.add(takenCards);
     }
-
-    // _availableCardIdList.removeRange(
-    //   start,
-    //   end,
-    // );
 
     return distributedCards.map((takenCards) => takenCards.toMap()).toList();
   }
@@ -261,25 +242,15 @@ class Room {
     currentGameRound.isReadyForNextRound = isReady;
   }
 
-  // void _currentGameRoundRefresh() {
-  //   currentGameRound.votedCardId = null;
-  //   currentGameRound.pickedCardId = null;
-  //   currentGameRound.isReadyForNextRound = false;
-  // }
-
   void someUserReadyForNextRound() {
     currentRoundPlayersReadyCount++;
   }
 
-  // void _clearReadyForNextRoundCounter() {
-  //   currentRoundPlayersReadyCount++;
-  // }
-
-  /// nextRound() - when next round started
   void nextRound() {
     currentRoundPlayersReadyCount = 0;
     currentRoundNumber++;
 
+    currentGameRound.pickedSituationId = null;
     currentGameRound.votedCardId = null;
     currentGameRound.pickedCardId = null;
     currentGameRound.isReadyForNextRound = false;

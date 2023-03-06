@@ -8,9 +8,12 @@ class FullImageAvatar extends StatelessWidget {
   final Size? size;
   String? imageUrl;
 
+  final IconData iconData;
+
   FullImageAvatar({
     super.key,
     required this.imageUrl,
+    required this.iconData,
     this.emptyImageContainerColor,
     this.avatarForegroundColor,
     this.avatarBackgroundColor,
@@ -20,6 +23,7 @@ class FullImageAvatar extends StatelessWidget {
   FullImageAvatar.fromImageUrl({
     super.key,
     required this.imageUrl,
+    required this.iconData,
     this.emptyImageContainerColor,
     this.avatarForegroundColor,
     this.avatarBackgroundColor,
@@ -54,7 +58,8 @@ class FullImageAvatar extends StatelessWidget {
             backgroundColor: setAvatarBackgroundColor,
             radius: 90,
             child: Icon(
-              Icons.camera_alt,
+              // Icons.camera_alt,
+              iconData,
               size: 100,
               color: setAvatarForegroundColor,
             ),

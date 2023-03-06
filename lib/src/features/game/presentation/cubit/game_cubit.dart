@@ -391,35 +391,6 @@ class GameCubit extends Cubit<GameState> {
       },
     );
 
-    // // todo: take_card after round's end
-    // realtimeChannel.on(
-    //   RealtimeListenTypes.broadcast,
-    //   ChannelFilter(event: 'distribute_card'),
-    //   (payload, [ref]) async {
-    //     log("EVENT BROADCAST - distribute_card");
-
-    //     final distributedCardRaw =
-    //         payload["distribute_card"] as Map<String, dynamic>;
-    //     final distributedCard = TakenCards.fromMap(distributedCardRaw);
-
-    //     // print(distributedCard);
-
-    //     if (distributedCard.playerId == currentUser!.id) {
-    //       final gameCard = await GameApiService.getCard(
-    //           distributedCard.takenCardIdList.first);
-
-    //       // print("gameCard was distributed: $gameCard");
-
-    //       room!.addCardToCurrentPlayer(gameCard!);
-
-    //       emit(CardsTakenState(currentUser: true));
-    //     }
-    //     for (var cardId in distributedCard.takenCardIdList) {
-    //       room!.removeCardFromAvailableCardIdList(cardId);
-    //     }
-    //   },
-    // );
-
     // todo: choose_situation
     realtimeChannel.on(
       RealtimeListenTypes.broadcast,
@@ -460,15 +431,16 @@ class GameCubit extends Cubit<GameState> {
 
           final gameCard = GameCard.fromMap(payloadData, currentUser!.id);
 
-          room!.addChosenCard(gameCard);
+          room!.addPickedCard(gameCard);
 
           if (gameCard.isCurrentUser) {
             // room!.removeCardFromCurrentPlayer(gameCard.cardId);
             room!.currentGameRoundPickCardId(gameCard.cardId);
-            emit(GamePlayerPickedCardState(true));
-          } else {
-            emit(GamePlayerPickedCardState(false));
+            // emit(GamePlayerPickedCardState(gameCard.isCurrentUser));
           }
+          //else {
+          emit(GamePlayerPickedCardState(gameCard.isCurrentUser));
+          // }
         } catch (e) {
           if (kDebugMode) {
             print("EVENT - pick_card - e: $e.");
@@ -520,7 +492,7 @@ class GameCubit extends Cubit<GameState> {
           }
           room!.someUserReadyForNextRound();
 
-          emit(GameSomePlayerReadyToNextRound());
+          emit(GameSomePlayerReadyForNextRound());
         } catch (e) {
           if (kDebugMode) {
             print("EVENT - ready_for_next_round - e: $e.");
@@ -546,16 +518,16 @@ class GameCubit extends Cubit<GameState> {
                 room!.currentGameRound.pickedCardId!);
           }
 
-          final distributedCards = room!.distributeCards(count: 1);
-
-          room!.removeCardFromCurrentPlayer(
-              room!.currentGameRound.pickedCardId!);
           // ? info: give out cards
-          await realtimeChannel.send(
-            type: RealtimeListenTypes.broadcast,
-            event: "distribute_cards",
-            payload: {"distributed_cards": distributedCards},
-          );
+          if (room!.isCreatedByCurrentUser) {
+            final distributedCards = room!.distributeCards(count: 1);
+
+            await realtimeChannel.send(
+              type: RealtimeListenTypes.broadcast,
+              event: "distribute_cards",
+              payload: {"distributed_cards": distributedCards},
+            );
+          }
 
           room!.nextRound();
 

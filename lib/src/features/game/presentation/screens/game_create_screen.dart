@@ -34,6 +34,9 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
   /// [_roundsCountTextController.value] in seconds
   late final TextEditingController _roundsCountTextController;
 
+  /// [_playersCountTextController.value] in seconds
+  late final TextEditingController _playersCountTextController;
+
   @override
   void initState() {
     _titleRoomTextController = TextEditingController();
@@ -43,6 +46,7 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
     _timeToConfirmationTextController = TextEditingController(text: "60");
     _timeForVoteForCardTextController = TextEditingController(text: "20");
     _roundsCountTextController = TextEditingController(text: "10");
+    _playersCountTextController = TextEditingController(text: "5");
     _formKey = GlobalKey<FormState>();
     super.initState();
   }
@@ -171,6 +175,33 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
                     // const SizedBox(
                     //   height: 10,
                     // ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    DefaultTextField(
+                      labelText: "Players count",
+                      controller: _playersCountTextController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      onChanged: (value) {
+                        if (value == "") {
+                          _playersCountTextController.text += "5";
+                        }
+                      },
+                      readOnly: true,
+                      validator: (value) => validators.onlyNumbers(
+                        "Players count",
+                        int.parse("${value ?? 0}"),
+                        minValue: 2,
+                        maxValue: 10,
+                        isRequired: true,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     DefaultTextField(
                       labelText: "Rounds count",
                       controller: _roundsCountTextController,
@@ -284,6 +315,8 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
         timeForVoteForCard:
             int.tryParse('${_timeForVoteForCardTextController.value}') ?? 20,
         roundsCount: int.tryParse('${_roundsCountTextController.value}') ?? 10,
+        playersCount:
+            int.tryParse('${_playersCountTextController.value}') ?? 10,
       );
 
       final gameCubit = context.read<GameCubit>();

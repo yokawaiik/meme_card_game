@@ -24,12 +24,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final size = MediaQuery.of(context).size;
 
-    // final backdropFilterColor = colorScheme.primaryContainer;
+    final authCubit = context.read<AuthenticationCubit>();
 
-    final _authCubit = context.read<AuthenticationCubit>();
-
-    final userBackgroundColor = _authCubit.currentUser?.backgroundColor;
-    final userForegroundColor = _authCubit.currentUser?.color;
+    final userBackgroundColor = authCubit.currentUser?.backgroundColor;
+    final userForegroundColor = authCubit.currentUser?.color;
     final appbarBackgroundColor = colorScheme.secondaryContainer;
 
     return Scaffold(
@@ -58,9 +56,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Center(
               child: FullImageAvatar(
                 emptyImageContainerColor: appbarBackgroundColor,
+                iconData: Icons.person_4,
                 avatarBackgroundColor: userBackgroundColor,
                 avatarForegroundColor: userForegroundColor,
-                imageUrl: _authCubit.currentUser?.imageUrl,
+                imageUrl: authCubit.currentUser?.imageUrl,
               ),
             ),
             // todo: add textField
