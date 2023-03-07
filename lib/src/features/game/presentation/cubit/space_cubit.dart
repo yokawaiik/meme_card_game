@@ -41,8 +41,13 @@ class SpaceCubit extends Cubit<SpaceState> {
         gameCubit.stream.listen(_streamSubscriptionForGameCubit);
   }
 
+  @override
+  Future<void> close() {
+    _streamSubscription.cancel();
+    return super.close();
+  }
+
   void _streamSubscriptionForGameCubit(GameState state) {
-    print('_streamSubscriptionForGameCubit - state: $state');
     if (state is PlayerLeftRoomState) {
       emit(SpacePlayerLeftState());
     } else if (state is LeftRoomState) {
@@ -51,10 +56,8 @@ class SpaceCubit extends Cubit<SpaceState> {
       emit(SpaceGameDeletedState());
     } else if (state is GameSitautionPickedState) {
       emit(SpaceSituationPickedState());
-    } else if (state is CardsTakenState) {
-      if (state.currentUser) {
-        emit(SpaceAddedCardToCurrentPlayerState());
-      }
+    } else if (state is CardsTakenState && state.currentUser) {
+      emit(SpaceAddedCardToCurrentPlayerState());
     } else if (state is GamePlayerPickedCardState) {
       emit(SpacePlayerPickedCardState(state.isCurrentUser));
     } else if (state is GameVotedForCardState) {

@@ -41,6 +41,7 @@ class Room {
 
   List<Situation> get situationList => _situationList;
 
+  ///[currentRoundNumber] is a round index for pickedSituationList
   late int currentRoundNumber;
 
   late List<Situation> _pickedSituationList;
@@ -52,6 +53,9 @@ class Room {
   }
 
   late final GameRound currentGameRound;
+
+  bool get isGameFinished =>
+      currentRoundNumber == roomConfiguration.roundsCount - 1;
 
   /// [isAllPlayersConfirmed] to start game
   bool get isAllPlayersConfirm {
@@ -94,7 +98,10 @@ class Room {
         : RoomConfiguration();
     _situationList = [];
     _currentPlayerCards = [];
-    _availableCardIdList = data["available_card_id_list"] ?? [];
+    // _availableCardIdList = data["available_card_id_list"] ?? [];
+    _availableCardIdList = (data["available_card_id_list"] as List<dynamic>)
+        .map((item) => item.toString())
+        .toList();
     _pickedSituationList = [];
 
     currentRoundPlayersReadyCount = 0;
@@ -168,19 +175,19 @@ class Room {
   void addPickedCard(
     GameCard card,
   ) {
-    // todo: check  chosen card
-
     _getLastSituation()?.cards.add(card);
   }
 
   void addVotingResult(VoteForCard voteForCard) {
-    _getLastSituation()
+    final votedCard = _getLastSituation()
         ?.cards
-        .firstWhere((chosenCard) => chosenCard.cardId == voteForCard.cardId)
-        .votesList
-        .add(voteForCard);
+        .firstWhere((chosenCard) => chosenCard.cardId == voteForCard.cardId);
 
-    players!.firstWhere((player) => player.id == voteForCard.playerId).points++;
+    votedCard!.votesList.add(voteForCard);
+
+    final cardByPlayerId = votedCard.userId;
+
+    players!.firstWhere((player) => player.id == cardByPlayerId).points++;
   }
 
   void pickSituation(Situation pickedSituation) {

@@ -77,15 +77,6 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
         },
         child: Scaffold(
           appBar: AppBar(
-            // leading: IconButton(
-            //   icon: Icon(Icons.close),
-            //   onPressed: () {
-            //     // todo: add logic here
-            //     // GoRouter.of(context).pop();
-            //     // _closeRoom(context);
-            //   },
-            // ),
-
             title: const Text(
               'Game space',
             ),
@@ -123,14 +114,6 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
               if (state is SpaceLoadingState) {
                 onPressedFloatingActionButton = null;
                 buttonText = "Waiting";
-              } else if (spaceCubit.room!.currentRoundNumber ==
-                  spaceCubit.room!.roomConfiguration.roundsCount) {
-                // ? info: if round end creator have to press to finish
-                onPressedFloatingActionButton = () {
-                  spaceCubit.finishGame();
-                  // _onViewChange(0);
-                };
-                buttonText = "Finish game";
               } else if (spaceCubit.room!.isCreatedByCurrentUser &&
                   spaceCubit.room!.currentGameRound.pickedSituationId == null) {
                 if (spaceCubit
@@ -145,8 +128,13 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
 
                   buttonText = "Pick situation";
                 }
+              } else if (!spaceCubit.room!.isCreatedByCurrentUser &&
+                  spaceCubit.room!.currentSituation == null) {
+                onPressedFloatingActionButton = () {
+                  _onViewChange(0);
+                };
+                buttonText = "Wait for a situation";
               }
-
               // ?if situation was chosen and necessary to choose card
               else if (spaceCubit.room!.currentGameRound.pickedCardId == null) {
                 onPressedFloatingActionButton = () {
@@ -164,8 +152,18 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
                 buttonText = "Vote for card";
               }
               // ? if card was chosen and necessary player ready for the next round
+              // else if (spaceCubit.room!.currentRoundNumber - 1 ==
+              //     spaceCubit.room!.roomConfiguration.roundsCount) {
+              else if (spaceCubit.room!.isGameFinished) {
+                // ? info: if round end creator have to press to finish
 
-              else if (spaceCubit.room!.currentGameRound.isReadyForNextRound ==
+                onPressedFloatingActionButton = () {
+                  spaceCubit.finishGame();
+                };
+
+                buttonText = "Finish game";
+              } else if (spaceCubit
+                      .room!.currentGameRound.isReadyForNextRound ==
                   false) {
                 // ? vote for next round
                 onPressedFloatingActionButton = () {

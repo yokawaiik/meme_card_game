@@ -49,3 +49,16 @@ FutureOr<String?> gameRoomRequired(
 
   return null;
 }
+
+FutureOr<String?> gameFinished(
+  BuildContext context,
+  GoRouterState goRouterState,
+) {
+  final gameCubit = context.read<GameCubit>();
+
+  if (gameCubit.room == null || gameCubit.room!.isGameFinished != true) {
+    return routes_constants.homePath;
+  }
+
+  return null;
+}

@@ -45,8 +45,8 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
     _timeForChooseSituationTextController = TextEditingController(text: "30");
     _timeToConfirmationTextController = TextEditingController(text: "60");
     _timeForVoteForCardTextController = TextEditingController(text: "20");
-    _roundsCountTextController = TextEditingController(text: "10");
-    _playersCountTextController = TextEditingController(text: "5");
+    _roundsCountTextController = TextEditingController(text: "7");
+    _playersCountTextController = TextEditingController(text: "7");
     _formKey = GlobalKey<FormState>();
     super.initState();
   }
@@ -54,234 +54,221 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
   @override
   Widget build(BuildContext context) {
     // todo: take out to the router
-    return BlocListener<GameCubit, GameState>(
-      listenWhen: (previous, current) {
-        if (previous is CreatedGameState && current is JoinedRoomState) {
-          return true;
-        }
-        return false;
-      },
-      listener: (context, state) {
-        context.pushReplacementNamed(routes_constants.gameLobby);
-      },
-      child: WillPopScope(
-        onWillPop: () => _disposeRoom(context),
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text("Create new game"),
-          ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    DefaultTextField(
-                      labelText: "Title room",
-                      controller: _titleRoomTextController,
-                      validator: (value) => validators.baseFieldCheck(
-                        "Title room",
-                        value,
-                        isRequired: true,
-                      ),
+    return WillPopScope(
+      onWillPop: () => _disposeRoom(context),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Create new game"),
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  DefaultTextField(
+                    labelText: "Title room",
+                    controller: _titleRoomTextController,
+                    validator: (value) => validators.baseFieldCheck(
+                      "Title room",
+                      value,
+                      isRequired: true,
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    // todo: add time for answer
-                    CheckboxListTile(
-                      title: const Text("Automatic situation selection"),
-                      subtitle: const Text(
-                          "It's choosing randomly from public database"),
-                      value: _automaticSituationSelection,
-                      onChanged: _toggleAutomaticSituationSelection,
-                      enabled:
-                          false, // todo: remove it after adding a functionality
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  // todo: add time for answer
+                  CheckboxListTile(
+                    title: const Text("Automatic situation selection"),
+                    subtitle: const Text(
+                        "It's choosing randomly from public database"),
+                    value: _automaticSituationSelection,
+                    onChanged: _toggleAutomaticSituationSelection,
+                    enabled:
+                        false, // todo: remove it after adding a functionality
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
 
-                    // DefaultTextField(
-                    //   labelText: "Time to confirmation (seconds)",
-                    //   controller: _timeToConfirmationTextController,
-                    //   keyboardType: TextInputType.number,
-                    //   inputFormatters: [
-                    //     FilteringTextInputFormatter.digitsOnly,
-                    //   ],
-                    //   onChanged: (value) {
-                    //     if (value == "") {
-                    //       _timeToConfirmationTextController.text += "10";
-                    //     }
-                    //   },
-                    //   readOnly: true,
-                    //   validator: (value) => validators.onlyNumbers(
-                    //     "Time to confirmation",
-                    //     int.parse("${value ?? 0}"),
-                    //     minValue: 10,
-                    //     maxValue: 180,
-                    //     isRequired: true,
-                    //   ),
-                    // ),
-                    // const SizedBox(
-                    //   height: 10,
-                    // ),
-                    // DefaultTextField(
-                    //   labelText: "Time for choose situation (seconds)",
-                    //   controller: _timeForChooseSituationTextController,
-                    //   keyboardType: TextInputType.number,
-                    //   inputFormatters: [
-                    //     FilteringTextInputFormatter.digitsOnly,
-                    //   ],
-                    //   onChanged: (value) {
-                    //     if (value == "") {
-                    //       _timeForChooseSituationTextController.text += "10";
-                    //     }
-                    //   },
-                    //   readOnly: true,
-                    //   validator: (value) => validators.onlyNumbers(
-                    //     "Time for choose situation",
-                    //     int.parse("${value ?? 0}"),
-                    //     minValue: 10,
-                    //     maxValue: 180,
-                    //     isRequired: true,
-                    //   ),
-                    // ),
-                    // const SizedBox(
-                    //   height: 10,
-                    // ),
-                    // DefaultTextField(
-                    //   labelText: "Time for vote for card (seconds)",
-                    //   controller: _timeForVoteForCardTextController,
-                    //   keyboardType: TextInputType.number,
-                    //   inputFormatters: [
-                    //     FilteringTextInputFormatter.digitsOnly,
-                    //   ],
-                    //   onChanged: (value) {
-                    //     if (value == "") {
-                    //       _timeForVoteForCardTextController.text += "10";
-                    //     }
-                    //   },
-                    //   readOnly: true,
-                    //   validator: (value) => validators.onlyNumbers(
-                    //     "Time for vote for card",
-                    //     int.parse("${value ?? 0}"),
-                    //     minValue: 10,
-                    //     maxValue: 180,
-                    //     isRequired: true,
-                    //   ),
-                    // ),
-                    // const SizedBox(
-                    //   height: 10,
-                    // ),
-                    const SizedBox(
-                      height: 10,
+                  // DefaultTextField(
+                  //   labelText: "Time to confirmation (seconds)",
+                  //   controller: _timeToConfirmationTextController,
+                  //   keyboardType: TextInputType.number,
+                  //   inputFormatters: [
+                  //     FilteringTextInputFormatter.digitsOnly,
+                  //   ],
+                  //   onChanged: (value) {
+                  //     if (value == "") {
+                  //       _timeToConfirmationTextController.text += "10";
+                  //     }
+                  //   },
+                  //   readOnly: true,
+                  //   validator: (value) => validators.onlyNumbers(
+                  //     "Time to confirmation",
+                  //     int.parse("${value ?? 0}"),
+                  //     minValue: 10,
+                  //     maxValue: 180,
+                  //     isRequired: true,
+                  //   ),
+                  // ),
+                  // const SizedBox(
+                  //   height: 10,
+                  // ),
+                  // DefaultTextField(
+                  //   labelText: "Time for choose situation (seconds)",
+                  //   controller: _timeForChooseSituationTextController,
+                  //   keyboardType: TextInputType.number,
+                  //   inputFormatters: [
+                  //     FilteringTextInputFormatter.digitsOnly,
+                  //   ],
+                  //   onChanged: (value) {
+                  //     if (value == "") {
+                  //       _timeForChooseSituationTextController.text += "10";
+                  //     }
+                  //   },
+                  //   readOnly: true,
+                  //   validator: (value) => validators.onlyNumbers(
+                  //     "Time for choose situation",
+                  //     int.parse("${value ?? 0}"),
+                  //     minValue: 10,
+                  //     maxValue: 180,
+                  //     isRequired: true,
+                  //   ),
+                  // ),
+                  // const SizedBox(
+                  //   height: 10,
+                  // ),
+                  // DefaultTextField(
+                  //   labelText: "Time for vote for card (seconds)",
+                  //   controller: _timeForVoteForCardTextController,
+                  //   keyboardType: TextInputType.number,
+                  //   inputFormatters: [
+                  //     FilteringTextInputFormatter.digitsOnly,
+                  //   ],
+                  //   onChanged: (value) {
+                  //     if (value == "") {
+                  //       _timeForVoteForCardTextController.text += "10";
+                  //     }
+                  //   },
+                  //   readOnly: true,
+                  //   validator: (value) => validators.onlyNumbers(
+                  //     "Time for vote for card",
+                  //     int.parse("${value ?? 0}"),
+                  //     minValue: 10,
+                  //     maxValue: 180,
+                  //     isRequired: true,
+                  //   ),
+                  // ),
+                  // const SizedBox(
+                  //   height: 10,
+                  // ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  DefaultTextField(
+                    labelText: "Players count",
+                    controller: _playersCountTextController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    onChanged: (value) {
+                      if (value == "") {
+                        _playersCountTextController.text += "5";
+                      }
+                    },
+                    readOnly: true,
+                    validator: (value) => validators.onlyNumbers(
+                      "Players count",
+                      int.parse("${value ?? 0}"),
+                      minValue: 2,
+                      maxValue: 10,
+                      isRequired: true,
                     ),
-                    DefaultTextField(
-                      labelText: "Players count",
-                      controller: _playersCountTextController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (value) {
-                        if (value == "") {
-                          _playersCountTextController.text += "5";
-                        }
-                      },
-                      readOnly: true,
-                      validator: (value) => validators.onlyNumbers(
-                        "Players count",
-                        int.parse("${value ?? 0}"),
-                        minValue: 2,
-                        maxValue: 10,
-                        isRequired: true,
-                      ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  DefaultTextField(
+                    labelText: "Rounds count",
+                    controller: _roundsCountTextController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    onChanged: (value) {
+                      if (value == "") {
+                        _roundsCountTextController.text += "7";
+                      }
+                    },
+                    readOnly: true,
+                    validator: (value) => validators.onlyNumbers(
+                      "Rounds count",
+                      int.parse("${value ?? 0}"),
+                      minValue: 2,
+                      maxValue: 10,
+                      isRequired: true,
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    DefaultTextField(
-                      labelText: "Rounds count",
-                      controller: _roundsCountTextController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (value) {
-                        if (value == "") {
-                          _roundsCountTextController.text += "10";
-                        }
-                      },
-                      readOnly: true,
-                      validator: (value) => validators.onlyNumbers(
-                        "Rounds count",
-                        int.parse("${value ?? 0}"),
-                        minValue: 10,
-                        maxValue: 180,
-                        isRequired: true,
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        BlocBuilder<GameCubit, GameState>(
-                          buildWhen: (previous, current) {
-                            if (current is LoadingGameState ||
-                                current is CreatedGameState) {
-                              return true;
-                            }
-                            return false;
-                          },
-                          builder: (context, state) {
-                            final isLoadingGameState =
-                                state is LoadingGameState;
-                            final isCreatedGameState =
-                                state is CreatedGameState;
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      BlocBuilder<GameCubit, GameState>(
+                        buildWhen: (previous, current) {
+                          if (current is LoadingGameState ||
+                              current is CreatedGameState) {
+                            return true;
+                          }
+                          return false;
+                        },
+                        builder: (context, state) {
+                          final isLoadingGameState = state is LoadingGameState;
+                          final isCreatedGameState = state is CreatedGameState;
 
-                            return Stack(
-                              children: [
-                                if (isLoadingGameState)
-                                  const Positioned.fill(
-                                    child: Align(
-                                      alignment: Alignment.center,
-                                      child: SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(),
-                                      ),
+                          return Stack(
+                            children: [
+                              if (isLoadingGameState)
+                                const Positioned.fill(
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(),
                                     ),
                                   ),
-                                FilledButton.tonalIcon(
-                                  onPressed:
-                                      (isLoadingGameState || isCreatedGameState)
-                                          ? null
-                                          : () => _createRoom(context),
-                                  icon: const Icon(Icons.people),
-                                  label: Text(
-                                    isCreatedGameState
-                                        ? "Wait for join"
-                                        : "Create room",
+                                ),
+                              FilledButton.tonalIcon(
+                                onPressed:
+                                    (isLoadingGameState || isCreatedGameState)
+                                        ? null
+                                        : () => _createRoom(context),
+                                icon: const Icon(Icons.people),
+                                label: Text(
+                                  isCreatedGameState
+                                      ? "Wait for join"
+                                      : "Create room",
+                                ),
+                                style: FilledButton.styleFrom(
+                                  minimumSize: const Size(
+                                    100,
+                                    46,
                                   ),
-                                  style: FilledButton.styleFrom(
-                                    minimumSize: const Size(
-                                      100,
-                                      46,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                                ),
+                              )
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
@@ -314,9 +301,8 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
                 20,
         timeForVoteForCard:
             int.tryParse('${_timeForVoteForCardTextController.value}') ?? 20,
-        roundsCount: int.tryParse('${_roundsCountTextController.value}') ?? 10,
-        playersCount:
-            int.tryParse('${_playersCountTextController.value}') ?? 10,
+        roundsCount: int.tryParse('${_roundsCountTextController.value}') ?? 7,
+        playersCount: int.tryParse('${_playersCountTextController.value}') ?? 7,
       );
 
       final gameCubit = context.read<GameCubit>();

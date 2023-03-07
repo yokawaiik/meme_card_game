@@ -29,11 +29,15 @@ class GameSpaceBoardView extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(10),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
                   child: Text(
-                    "Round: ${room.currentRoundNumber}",
-                    style: textTheme.displayLarge,
+                    room.currentRoundNumber !=
+                            room.roomConfiguration.roundsCount
+                        ? "Round: ${room.currentRoundNumber + 1}"
+                        : "Final round",
+                    style: textTheme.displayMedium,
                   ),
                 ),
                 SizedBox(

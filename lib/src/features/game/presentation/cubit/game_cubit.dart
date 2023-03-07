@@ -122,18 +122,13 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void _setEventHandlers(RealtimeChannel realtimeChannel) {
-    realtimeChannel.on(
-      RealtimeListenTypes.presence,
-      ChannelFilter(event: 'sync'),
-      (payload, [ref]) {
-        print("------SYNC------");
-        if (realtimeChannel.presence.state.isEmpty) return;
-
-        // if (room != null && room.isCreatedByCurrentUser) {
-
-        // }
-      },
-    );
+    // realtimeChannel.on(
+    //   RealtimeListenTypes.presence,
+    //   ChannelFilter(event: 'sync'),
+    //   (payload, [ref]) {
+    //     if (realtimeChannel.presence.state.isEmpty) return;
+    //   },
+    // );
 
     realtimeChannel.on(
       RealtimeListenTypes.presence,
@@ -265,7 +260,11 @@ class GameCubit extends Cubit<GameState> {
             emit(LeftRoomState());
             _leaveRoom();
           } else {
-            room!.removePlayer(leftPlayer.id);
+            // do not to delete players from memory
+            if (room!.isGameFinished == false) {
+              room!.removePlayer(leftPlayer.id);
+            }
+
             emit(PlayerLeftRoomState());
           }
         }
@@ -282,19 +281,6 @@ class GameCubit extends Cubit<GameState> {
             PlayerConfirmation.fromMap(payload["data_object"]);
         room!.setConfirmation(playerConfirmation);
 
-        // take cards
-
-        // final takenCardsPayload = TakenCards(
-        //   playerId: currentUser!.id,
-        //   takenCardIdList: ,
-        // );
-        // await realtimeChannel.send(
-        //   type: RealtimeListenTypes.broadcast,
-        //   event: 'distribute_cards',
-        //   payload: takenCardsPayload,
-        // );
-
-        // todo: check who is confirm
         if (playerConfirmation.playerId == currentUser!.id) {
           emit(ConfirmedGameState());
         } else {
@@ -309,8 +295,6 @@ class GameCubit extends Cubit<GameState> {
       (payload, [ref]) async {
         log("EVENT BROADCAST - game_start");
         try {
-          // room!.setStatus(GameStatus.started);
-
           if (room!.isCreatedByCurrentUser) {
             // ? set cards first by creator
             final distributedCards = room!.distributeCards();
@@ -326,11 +310,7 @@ class GameCubit extends Cubit<GameState> {
 
             for (var situation in situations!) {
               room!.addSituation(situation);
-
-              // print("situation was added to room: $situation.");
             }
-
-            // todo: send new_round
           }
 
           emit(StartedGameState());
@@ -349,12 +329,6 @@ class GameCubit extends Cubit<GameState> {
       (payload, [ref]) async {
         log("EVENT BROADCAST - distribute_cards");
 
-        // print(payload["distributed_cards"]);
-        // print(room!.availableCardIdList);
-
-        // todo: need to add cards to creator
-
-        // if (!room!.isCreatedByCurrentUser) {
         final distributedCardsRaw =
             payload["distributed_cards"] as List<dynamic>;
 
@@ -391,7 +365,6 @@ class GameCubit extends Cubit<GameState> {
       },
     );
 
-    // todo: choose_situation
     realtimeChannel.on(
       RealtimeListenTypes.broadcast,
       ChannelFilter(event: 'pick_situation'),
@@ -402,7 +375,7 @@ class GameCubit extends Cubit<GameState> {
           final situation = await GameApiService.getSituation(
               payload['picked_situation_id'] as String);
 
-          print("Situation was picked: $situation.");
+          // print("Situation was picked: $situation.");
 
           room!.pickSituation(situation!);
 
@@ -420,7 +393,6 @@ class GameCubit extends Cubit<GameState> {
       },
     );
 
-    // todo: pick_card
     realtimeChannel.on(
       RealtimeListenTypes.broadcast,
       ChannelFilter(event: 'pick_card'),
@@ -434,13 +406,9 @@ class GameCubit extends Cubit<GameState> {
           room!.addPickedCard(gameCard);
 
           if (gameCard.isCurrentUser) {
-            // room!.removeCardFromCurrentPlayer(gameCard.cardId);
             room!.currentGameRoundPickCardId(gameCard.cardId);
-            // emit(GamePlayerPickedCardState(gameCard.isCurrentUser));
           }
-          //else {
           emit(GamePlayerPickedCardState(gameCard.isCurrentUser));
-          // }
         } catch (e) {
           if (kDebugMode) {
             print("EVENT - pick_card - e: $e.");
@@ -450,7 +418,6 @@ class GameCubit extends Cubit<GameState> {
       },
     );
 
-    // todo: vote_for_card
     realtimeChannel.on(
       RealtimeListenTypes.broadcast,
       ChannelFilter(event: 'vote_for_card'),
@@ -510,8 +477,6 @@ class GameCubit extends Cubit<GameState> {
         try {
           print('EVENT - next_round');
 
-          // // todo: add points to every user
-
           //? remove card if user put it
           if (room!.currentGameRound.pickedCardId != null) {
             room!.removeCardFromCurrentPlayer(
@@ -541,20 +506,17 @@ class GameCubit extends Cubit<GameState> {
       },
     );
 
-    // todo: finish
     realtimeChannel.on(
       RealtimeListenTypes.broadcast,
       ChannelFilter(event: 'finish_game'),
       (payload, [ref]) {
         try {
-          print("EVENT - finish_game");
+          final userId = payload["data_object"]["user_id"] as String;
 
-          // final payloadData = payload['finish_game'];
-
-          // closeRoom();
-          // todo: 1 handle finish_game
-
-          emit(GameFinishedState());
+          if (userId == currentUser!.id) {
+            gameChannel!.unsubscribe();
+            emit(GameFinishedState());
+          }
         } catch (e) {
           if (kDebugMode) {
             print("EVENT - finish_game - e: $e.");
@@ -595,7 +557,6 @@ class GameCubit extends Cubit<GameState> {
     try {
       emit(ConfirmLoadingGameState());
 
-      // todo: implements
       final payload = PlayerConfirmation(
         currentUser!.id,
         isConfirm,
@@ -634,6 +595,9 @@ class GameCubit extends Cubit<GameState> {
 
   Future<void> closeRoom() async {
     try {
+      if (kDebugMode) {
+        print("GameCubit - closeRoom");
+      }
       emit(LoadingGameState());
 
       if (room != null && room!.isCreatedByCurrentUser) {
@@ -655,8 +619,6 @@ class GameCubit extends Cubit<GameState> {
 
   Future<void> _deleteRoom() async {
     try {
-      // todo: implements
-
       // room - is non-existent
       late final String roomId;
       if (room == null) {

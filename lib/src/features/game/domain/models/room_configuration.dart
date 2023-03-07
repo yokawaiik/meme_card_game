@@ -2,9 +2,9 @@ const _defaultAutomaticSituationSelection = true;
 const _defaultTimeforConfirmation = 20;
 const _defaultTimeforVoteForCard = 60;
 const _defaultTimeForChooseSituation = 20;
-const _defaultRoundsCount = 10;
+const _defaultRoundsCount = 7;
 const _defaultPlayerStartCardsCount = 7;
-const _defaultPlayersCount = 5;
+const _defaultPlayersCount = 7;
 
 class RoomConfiguration {
   late final bool automaticSituationSelection;
@@ -24,10 +24,10 @@ class RoomConfiguration {
     this.timeForConfirmation = 20,
     this.timeForVoteForCard = 60,
     this.timeForChooseSituation = 20,
-    this.roundsCount = 10,
+    this.roundsCount = 7,
     this.playerStartCardsCount = 7,
     this.useCreatorCards = false,
-    this.playersCount = 5,
+    this.playersCount = 7,
   });
 
   RoomConfiguration.fromMap(Map<String, dynamic> data) {

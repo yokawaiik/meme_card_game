@@ -65,6 +65,16 @@ class GameLobbyScreen extends StatelessWidget {
                             ),
                           ],
                         ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          "Max players count: ${room.roomConfiguration.playersCount}",
+                          style: textTheme.titleSmall,
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
                       ],
                     ),
                   ],
