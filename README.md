@@ -30,9 +30,13 @@ A new Flutter project.
 
 ## How to launch app
 
+### Supabase and [auto_scripts](./auto_scripts/README.md);
+1. Sign up to Supabase;
+2. Set up Supabase with [Supabase README.md](./supabase/README.md);
+3. Set up data in Supabase project. Get and paste data to environments from Supabase project: SUPABASE_ANNON_KEY, SUPABASE_URL. You can find environments in yaml files (.env.development.yaml) in root [auto_scripts](./auto_scripts/README.md) directory.
 
-### Supabase
-
+### [App](./app/README.md);
+1. Get and paste data to environments from Supabase project: SUPABASE_ANNON_KEY, SUPABASE_URL. You can find environments in dot files (.env.development) in root flutter project.
 
 
 ## Author contacts
