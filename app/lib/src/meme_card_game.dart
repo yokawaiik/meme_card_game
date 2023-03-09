@@ -26,7 +26,7 @@ class MemeCardGame extends StatelessWidget {
       child: MaterialApp.router(
         theme: ThemeData(
           useMaterial3: true,
-          colorSchemeSeed: const Color.fromARGB(255, 127, 134, 61),
+          colorSchemeSeed: Color.fromRGBO(127, 134, 61, 1),
         ),
         routerConfig: router,
       ),

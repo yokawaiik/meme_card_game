@@ -2,6 +2,26 @@
 
 A small card game project where I tried the flutter_bloc package and Supabase Realtime (like Websockets but isomorphic). The game consists in the fact that the user must choose a situation (or it occurs on the server), after which the players in the conate vote for the most suitable pictures for the situation. For each vote, the user receives a point. The game is similar to the game from the real world, but transferred to the digital format. The project is not perfect, but some properties of the author in the collection of previously unknown technologies and, possibly, in the future will be significantly improved.
 
+## Content table
+
+- [meme\_card\_game](#meme_card_game)
+  - [Content table](#content-table)
+  - [Getting Started](#getting-started)
+  - [Used stack](#used-stack)
+  - [Features](#features)
+    - [Global](#global)
+    - [Authentication](#authentication)
+    - [Home](#home)
+    - [Game](#game)
+  - [Ways of improving](#ways-of-improving)
+  - [App demonstration](#app-demonstration)
+    - [Video demonstration](#video-demonstration)
+  - [How to launch app](#how-to-launch-app)
+    - [Supabase and auto\_scripts](#supabase-and-auto_scripts)
+    - [App](#app)
+  - [Author contacts](#author-contacts)
+  - [License](#license)
+
 ## Getting Started
 
 ## Used stack
@@ -41,13 +61,26 @@ A small card game project where I tried the flutter_bloc package and Supabase Re
 - [ ] Game logic: timers, skip round.
 
 ## App demonstration
+
+
+![Sign in | Home | Profile](./screenshots/images/signin_home_profile.jpg)
+\
+\
+![Create | Lobby | Game space with board](./screenshots/images/create_lobby_board.jpg)
+\
+\
+![Board (picked situation) | Pick card | Vote for card](./screenshots/images/board_pick_vote.jpg)
+\
+\
+![Stats | Finish | Join game](./screenshots/images/stats_finish_join.jpg)
+
 ### Video demonstration
 
-todo
+[Demonstration on YouTube](https://youtu.be/aEdlxEvhecY)
 
-### App download
+<!-- ### App download -->
 
-todo
+<!-- todo -->
 
 ## How to launch app
 ### Supabase and [auto_scripts](./auto_scripts/README.md)

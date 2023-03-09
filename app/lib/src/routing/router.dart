@@ -17,7 +17,6 @@ import '../features/game/presentation/screens/game_space_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/game/presentation/screens/join_game_screen.dart';
 
-import '../features/profile/presentation/screens/profile_view.dart';
 import './routes_constants.dart' as routes_constants;
 import './middleware_guards.dart' as middleware_guards;
 
@@ -106,7 +105,8 @@ final router = GoRouter(
             return BlocListener<GameCubit, GameState>(
               listener: (ctx, state) {
                 if (state is JoinedRoomState) {
-                  GoRouter.of(ctx).pushNamed(routes_constants.gameLobby);
+                  GoRouter.of(ctx)
+                      .pushReplacementNamed(routes_constants.gameLobby);
                 } else if (state is DeletedGameState) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
