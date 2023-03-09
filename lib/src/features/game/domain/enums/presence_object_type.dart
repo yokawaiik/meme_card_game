@@ -1,4 +1,0 @@
-enum PresenceObjectType {
-  room,
-  player,
-}

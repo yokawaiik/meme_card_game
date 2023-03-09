@@ -1,4 +1,8 @@
+# Supabase project configuration
 
+## Set up data in table ans storage
+
+To set up data in table and storage in Supabase project yon can use [auto_scripts](../auto_scripts/README.md).
 
 ## Primary tables (created for the business logic of app)
 
