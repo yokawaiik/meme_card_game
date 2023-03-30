@@ -1,15 +1,10 @@
 import 'dart:async';
-import 'dart:io' as io;
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../models/supabase_exception.dart';
 import '../domain/current_user.dart';
-
-import '../../../constants/supabase_constants.dart' as supabase_constants;
-import '../utils/generate_image_path.dart';
 
 // import 'package:mime/mime.dart';
 

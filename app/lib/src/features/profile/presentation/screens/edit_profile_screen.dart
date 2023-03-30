@@ -1,6 +1,3 @@
-import 'dart:developer';
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,7 +19,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final size = MediaQuery.of(context).size;
 
     final authCubit = context.read<AuthenticationCubit>();
 
@@ -34,7 +30,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => _backButton(context),
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_outlined,
           ),
         ),

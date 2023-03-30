@@ -5,10 +5,7 @@ import 'package:meme_card_game/src/common_widgets/button_with_indicator.dart';
 import 'package:meme_card_game/src/features/game/presentation/cubit/game_cubit.dart';
 import 'package:flutter/services.dart';
 
-import 'package:collection/collection.dart';
 import 'package:meme_card_game/src/features/game/widgets/player_list_tile.dart';
-
-import "../../../../routing/routes_constants.dart" as routes_constants;
 
 class GameLobbyScreen extends StatelessWidget {
   const GameLobbyScreen({super.key});
@@ -65,14 +62,14 @@ class GameLobbyScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 10,
                         ),
                         Text(
                           "Max players count: ${room.roomConfiguration.playersCount}",
                           style: textTheme.titleSmall,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 10,
                         ),
                       ],
@@ -127,7 +124,7 @@ class GameLobbyScreen extends StatelessWidget {
                     );
                   },
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 BlocBuilder<GameCubit, GameState>(

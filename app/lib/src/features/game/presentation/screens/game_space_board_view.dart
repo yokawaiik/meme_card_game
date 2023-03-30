@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:meme_card_game/src/features/game/domain/models/situation.dart';
 
 import '../cubit/space_cubit.dart';
 
@@ -40,11 +39,11 @@ class GameSpaceBoardView extends StatelessWidget {
                     style: textTheme.displayMedium,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 if (situation == null) ...[
-                  Text("Waiting for situation."),
+                  const Text("Waiting for situation."),
                 ] else ...[
                   Text(
                     situation.description,

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:meme_card_game/src/common_widgets/default_text_field.dart';
 import 'package:meme_card_game/src/features/game/domain/models/room_configuration.dart';
 import 'package:meme_card_game/src/features/game/presentation/cubit/game_cubit.dart';
 
-import '../../../../routing/routes_constants.dart' as routes_constants;
 import '../../../../utils/validators.dart' as validators;
 
 class GameCreateScreen extends StatefulWidget {
@@ -58,7 +56,7 @@ class _GameCreateScreenState extends State<GameCreateScreen> {
       onWillPop: () => _disposeRoom(context),
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Create new game"),
+          title: const Text("Create new game"),
         ),
         body: SingleChildScrollView(
           child: Padding(

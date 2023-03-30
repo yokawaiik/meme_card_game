@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:meme_card_game/src/features/game/domain/models/game_card.dart';
 import 'package:meme_card_game/src/features/game/presentation/cubit/space_cubit.dart';
 
 class GameSpaceVotingView extends StatelessWidget {
@@ -31,19 +28,19 @@ class GameSpaceVotingView extends StatelessWidget {
         final isSpaceLoadingState = state is SpaceLoadingState;
 
         if (currentSituation == null) {
-          return Center(
+          return const Center(
             child: Text("Situation haven't been picked yet."),
           );
         }
 
         if (currentSituation.cards.isEmpty) {
-          return Center(
+          return const Center(
             child: Text("Players haven't chosen cards yet."),
           );
         }
 
         return GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             mainAxisSpacing: 4,
             crossAxisSpacing: 4,

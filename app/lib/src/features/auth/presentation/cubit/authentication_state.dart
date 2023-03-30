@@ -12,7 +12,9 @@ class AuthenticatedState extends AuthenticationState {
 }
 
 class UnAuthenticatedState extends AuthenticationState {
-  UnAuthenticatedState();
+  final Object? message;
+
+  UnAuthenticatedState([this.message]);
 }
 
 class AuthenticationLoadingState extends AuthenticationState {

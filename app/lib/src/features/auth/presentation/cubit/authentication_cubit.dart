@@ -22,8 +22,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   late StreamSubscription _onAuthStateChange;
 
   AuthenticationCubit() : super(AuthenticationInitialState()) {
-    final _supabase = Supabase.instance;
-
     _restoreSession(); // attempt to restores session
 
     final authSubscription = AuthApiService.onAuthStateChange()
@@ -40,15 +38,17 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       }
 
       if (event == AuthChangeEvent.signedOut) {
-        emit(UnAuthenticatedState());
+        emit(UnAuthenticatedState("Session is closed."));
       }
     } catch (e) {
       if (kDebugMode) {
         print("AuthCubit - onAuthStateChange - event : $e ");
       }
-      emit(UnAuthenticatedState());
-      rethrow;
+
+      emit(UnAuthenticatedState([e]));
+      // rethrow;
     }
+    return null;
   }
 
   Future<void> _restoreSession() async {
@@ -65,10 +65,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       if (kDebugMode) {
         print('AuthCubit - _restoreSession - e: $e');
       }
-      emit(UnAuthenticatedState());
+      emit(UnAuthenticatedState([e]));
       await logOut();
       _currentUser = null;
-      rethrow;
+      // rethrow;
     }
   }
 
@@ -79,9 +79,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       emit(AuthenticatedState());
       _onAuthStateChange.resume();
     } catch (e) {
-      emit(UnAuthenticatedState());
+      emit(UnAuthenticatedState([e]));
       _onAuthStateChange.pause();
-      rethrow;
+      // rethrow;
     }
   }
 
@@ -90,16 +90,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       emit(AuthenticationLoadingState());
 
       await AuthApiService.logOut();
+      emit(UnAuthenticatedState());
     } catch (e) {
       if (kDebugMode) {
         print('AuthCubit - logOut - e : $e');
       }
-
-      rethrow;
+      emit(UnAuthenticatedState([e]));
+      // rethrow;
     } finally {
       _onAuthStateChange.pause();
       _currentUser = null;
-      emit(UnAuthenticatedState());
     }
   }
 
@@ -126,10 +126,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       emit(AuthenticatedState());
       _onAuthStateChange.resume();
     } catch (e) {
-      emit(UnAuthenticatedState());
+      emit(UnAuthenticatedState([e]));
       _currentUser = null;
       _onAuthStateChange.pause();
-      rethrow;
+      // rethrow;
     }
   }
 }

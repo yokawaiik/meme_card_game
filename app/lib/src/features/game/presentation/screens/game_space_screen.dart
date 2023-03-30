@@ -1,15 +1,10 @@
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/gestures.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:meme_card_game/src/common_widgets/default_text_field.dart';
 import 'package:meme_card_game/src/common_widgets/keep_alive_wrapper.dart';
-import 'package:meme_card_game/src/features/auth/presentation/cubit/authentication_cubit.dart';
-import 'package:meme_card_game/src/features/game/presentation/cubit/game_cubit.dart';
 import 'package:meme_card_game/src/features/game/presentation/screens/game_space_voting_view.dart';
 
-import '../../../../routing/routes_constants.dart' as routes_constants;
 import '../cubit/space_cubit.dart';
 import 'game_space_board_view.dart';
 import 'game_space_player_card_view.dart';
@@ -125,8 +120,6 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
                 } else {
                   // todo: implements
                   throw UnimplementedError();
-
-                  buttonText = "Pick situation";
                 }
               } else if (!spaceCubit.room!.isCreatedByCurrentUser &&
                   spaceCubit.room!.currentSituation == null) {
@@ -191,7 +184,7 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
               return FloatingActionButton.extended(
                 onPressed: onPressedFloatingActionButton,
                 label: Text(buttonText),
-                icon: Icon(Icons.image_rounded),
+                icon: const Icon(Icons.image_rounded),
               );
             },
           ),
@@ -199,7 +192,7 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
           bottomNavigationBar: NavigationBar(
             selectedIndex: _currentPage,
             onDestinationSelected: _onViewChange,
-            destinations: [
+            destinations: const [
               NavigationDestination(
                 icon: Icon(
                   Icons.games_rounded,
@@ -243,7 +236,9 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
   }
 
   void _onViewChange(int value) {
-    print("_onViewChange value: $value");
+    if (kDebugMode) {
+      print("_onViewChange value: $value");
+    }
 
     // _pageViewController.animateToPage(
     //   value,
@@ -316,7 +311,7 @@ class _GameSpaceScreenState extends State<GameSpaceScreen> {
       // ? it's necessary because if return true and then use router will be exception
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text("Something went wrong."),
         ),
       );

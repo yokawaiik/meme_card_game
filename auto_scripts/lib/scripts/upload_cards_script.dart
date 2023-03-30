@@ -44,11 +44,6 @@ Future<void> uploadCardsScript({bool isRelease = false}) async {
         final imagePath =
             "${supabase_constants.pathToCardsDirectory}/${imageFile.uri.pathSegments.last}";
 
-        final uploadedImagePath = await storageBucket.upload(
-          imagePath,
-          imageFile,
-        );
-
         final uploadedImagePublicUrl = storageBucket.getPublicUrl(imagePath);
 
         final card = Card(
@@ -65,7 +60,7 @@ Future<void> uploadCardsScript({bool isRelease = false}) async {
     }
     log("Script finished.");
   } catch (e) {
-    log('uploadDataScript threw an exception: ${e}.');
+    log('uploadDataScript threw an exception: $e.');
     rethrow;
   }
 }

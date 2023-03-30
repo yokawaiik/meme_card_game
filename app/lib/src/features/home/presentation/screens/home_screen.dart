@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:meme_card_game/src/features/auth/presentation/cubit/authentication_cubit.dart';
 import 'package:meme_card_game/src/features/profile/presentation/screens/profile_view.dart';
 
-import '../../../../routing/routes_constants.dart' as routes_constants;
 import '../../../game/presentation/screens/select_game_mode_view.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -23,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     currentPageIndex = 0;
 
-    screens = [SelectGameModeView(), ProfileView()];
+    screens = [const SelectGameModeView(), const ProfileView()];
 
     super.initState();
   }

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:meme_card_game/src/features/auth/presentation/cubit/authentication_cubit.dart';
 
 import '../../../../routing/routes_constants.dart' as routes_constants;
 

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:auto_scripts/models/situation.dart';
 
 import '../utils/get_environments_from_yaml.dart';
@@ -45,7 +43,7 @@ Future<void> addSituationsScript({bool isRelease = false}) async {
     }
     print("Script finished.");
   } catch (e) {
-    print('uploadDataScript threw an exception: ${e}.');
+    print('uploadDataScript threw an exception: $e.');
     rethrow;
   }
 }

@@ -2,13 +2,10 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
-import 'package:meme_card_game/src/features/game/domain/models/game_card.dart';
 import 'package:meme_card_game/src/features/game/domain/models/situation.dart';
 import 'package:meme_card_game/src/features/game/domain/models/vote_for_card.dart';
-import 'package:meme_card_game/src/features/game/domain/models/vote_for_next_round.dart';
 import 'package:meme_card_game/src/features/game/presentation/cubit/game_cubit.dart';
 import 'package:meme_card_game/src/features/game/utils/generate_random_number.dart';
-import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../auth/domain/current_user.dart';
@@ -130,7 +127,9 @@ class SpaceCubit extends Cubit<SpaceState> {
         payload: {},
       );
     } catch (e) {
-      print("SpaceCubit - nextRound - e: $e");
+      if (kDebugMode) {
+        print("SpaceCubit - nextRound - e: $e");
+      }
       emit(SpaceFailureState(e));
     }
   }
@@ -155,7 +154,9 @@ class SpaceCubit extends Cubit<SpaceState> {
 
       pickedCard.isImagePicked = !pickedCard.isImagePicked;
     } catch (e) {
-      print("SpaceCubit - pickCard - e: $e");
+      if (kDebugMode) {
+        print("SpaceCubit - pickCard - e: $e");
+      }
       emit(SpaceFailureState(e));
     }
   }

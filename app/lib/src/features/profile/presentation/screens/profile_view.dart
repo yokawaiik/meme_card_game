@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:meme_card_game/src/features/auth/presentation/cubit/authentication_cubit.dart';
 
 import '../../../../common_widgets/full_image_avatar.dart';
-import '../../../../routing/routes_constants.dart' as routes_constants;
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -13,8 +11,6 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final size = MediaQuery.of(context).size;
 
     final authCubit = context.read<AuthenticationCubit>();
 
@@ -49,7 +45,7 @@ class ProfileView extends StatelessWidget {
                   imageUrl: authCubit.currentUser?.imageUrl,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               Text(
@@ -107,10 +103,5 @@ class ProfileView extends StatelessWidget {
         ),
       );
     }
-  }
-
-  void _editProfileInfo(BuildContext context) async {
-    // context.goNamed(routes_constants.editProfile);
-    context.pushNamed(routes_constants.editProfile);
   }
 }

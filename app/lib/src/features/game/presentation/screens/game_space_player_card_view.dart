@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubit/space_cubit.dart';
-import 'package:meme_card_game/src/features/game/domain/models/game_card.dart';
 
 class GameSpacePlayerCardView extends StatelessWidget {
   const GameSpacePlayerCardView({Key? key}) : super(key: key);
@@ -86,7 +85,7 @@ class GameSpacePlayerCardView extends StatelessWidget {
 
     return FilledButton.tonalIcon(
       onPressed: onPressed,
-      icon: Icon(Icons.done),
+      icon: const Icon(Icons.done),
       label: Text(labelText),
     );
   }

@@ -9,14 +9,11 @@ import 'package:meme_card_game/src/features/game/domain/models/room.dart';
 import 'package:meme_card_game/src/features/game/domain/models/room_configuration.dart';
 import 'package:meme_card_game/src/features/game/domain/models/taken_cards.dart';
 import 'package:meme_card_game/src/features/game/domain/models/vote_for_card.dart';
-import 'package:meme_card_game/src/features/game/presentation/cubit/space_cubit.dart';
-import 'package:meme_card_game/src/features/game/utils/generate_random_number.dart';
 import 'package:meme_card_game/src/models/realtime_exception.dart';
 import 'package:nanoid/nanoid.dart' as nanoid;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../auth/domain/current_user.dart';
-import '../../domain/enums/game_status.dart';
 import '../../domain/enums/presence_object_type.dart';
 
 import 'package:collection/collection.dart';
@@ -315,7 +312,9 @@ class GameCubit extends Cubit<GameState> {
 
           emit(StartedGameState());
         } catch (e) {
-          print("EVENT BROADCAST - e: $e.");
+          if (kDebugMode) {
+            print("EVENT BROADCAST - e: $e.");
+          }
           emit(GameFailureState(
               "Something went wrong while game was starting."));
         }
@@ -332,15 +331,19 @@ class GameCubit extends Cubit<GameState> {
         final distributedCardsRaw =
             payload["distributed_cards"] as List<dynamic>;
 
-        print("distributedCardsRaw: ${distributedCardsRaw}");
+        if (kDebugMode) {
+          print("distributedCardsRaw: ${distributedCardsRaw}");
+        }
 
         final distributedCards = distributedCardsRaw
             .map((card) => TakenCards.fromMap(card))
             .toList();
 
         for (var distributedCard in distributedCards) {
-          print(
-              "distributedCard - takenCardIdList: ${distributedCard.takenCardIdList}");
+          if (kDebugMode) {
+            print(
+                "distributedCard - takenCardIdList: ${distributedCard.takenCardIdList}");
+          }
 
           // ? info: add cards to user
           if (distributedCard.playerId == currentUser!.id) {
@@ -370,7 +373,9 @@ class GameCubit extends Cubit<GameState> {
       ChannelFilter(event: 'pick_situation'),
       (payload, [ref]) async {
         try {
-          print('EVENT - pick_situation');
+          if (kDebugMode) {
+            print('EVENT - pick_situation');
+          }
 
           final situation = await GameApiService.getSituation(
               payload['picked_situation_id'] as String);
@@ -398,7 +403,9 @@ class GameCubit extends Cubit<GameState> {
       ChannelFilter(event: 'pick_card'),
       (payload, [ref]) async {
         try {
-          print('EVENT - pick_card');
+          if (kDebugMode) {
+            print('EVENT - pick_card');
+          }
           final payloadData = payload['data_object'];
 
           final gameCard = GameCard.fromMap(payloadData, currentUser!.id);
@@ -423,7 +430,9 @@ class GameCubit extends Cubit<GameState> {
       ChannelFilter(event: 'vote_for_card'),
       (payload, [ref]) {
         try {
-          print('EVENT - vote_for_card');
+          if (kDebugMode) {
+            print('EVENT - vote_for_card');
+          }
 
           final payloadData = payload['data_object'];
 
@@ -450,7 +459,9 @@ class GameCubit extends Cubit<GameState> {
       ChannelFilter(event: 'ready_for_next_round'),
       (payload, [ref]) {
         try {
-          print('EVENT - ready_for_next_round');
+          if (kDebugMode) {
+            print('EVENT - ready_for_next_round');
+          }
 
           final userId = payload['data_object']['user_id'];
 
@@ -475,7 +486,9 @@ class GameCubit extends Cubit<GameState> {
       ChannelFilter(event: 'next_round'),
       (payload, [ref]) async {
         try {
-          print('EVENT - next_round');
+          if (kDebugMode) {
+            print('EVENT - next_round');
+          }
 
           //? remove card if user put it
           if (room!.currentGameRound.pickedCardId != null) {

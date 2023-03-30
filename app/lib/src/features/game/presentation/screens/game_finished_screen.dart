@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routing/routes_constants.dart' as routes_constants;
@@ -42,10 +39,10 @@ class _GameFinishedScreenState extends State<GameFinishedScreen> {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: Icon(Icons.close),
+            icon: const Icon(Icons.close),
             onPressed: () => _close(),
           ),
-          title: Text("Results"),
+          title: const Text("Results"),
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -54,7 +51,7 @@ class _GameFinishedScreenState extends State<GameFinishedScreen> {
                 "The game finished",
                 style: textTheme.displayMedium,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               ListView.builder(

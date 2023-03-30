@@ -4,8 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../common_widgets/default_text_field.dart';
 import '../../../../common_widgets/password_text_field.dart';
 import '../../../../common_widgets/rounded_button.dart';
-import '../../../../models/supabase_exception.dart';
-import '../../application/auth_api_service.dart';
 import '../cubit/authentication_cubit.dart';
 
 import '../../utils/auth_validators.dart' as auth_validators;
@@ -47,138 +45,134 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _signIn(BuildContext context) async {
-    try {
-      final authCubit = context.read<AuthenticationCubit>();
+    final authCubit = context.read<AuthenticationCubit>();
 
-      if (!_validateFields()) return;
+    if (!_validateFields()) return;
 
-      await authCubit.signIn(_emailText!, _passwordText!);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unexpected error'),
-        ),
-      );
-    }
+    await authCubit.signIn(_emailText!, _passwordText!);
   }
 
   Future<void> _signUp(BuildContext context) async {
-    try {
-      final authCubit = context.read<AuthenticationCubit>();
+    final authCubit = context.read<AuthenticationCubit>();
 
-      if (!_validateFields()) return;
+    if (!_validateFields()) return;
 
-      await authCubit.signUp(_loginText!, _emailText!, _passwordText!);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-        ),
-      );
-    }
+    await authCubit.signUp(_loginText!, _emailText!, _passwordText!);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BlocBuilder<AuthenticationCubit, AuthenticationState>(
-        builder: (context, state) {
-          // final authCubit = context.read<AuthCubit>();
-
-          return Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 40,
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      _isSignIn ? "Sign in" : "Sign up",
-                      style: const TextStyle(
-                        fontSize: 30.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 200),
-                      child: Column(
-                        children: !_isSignIn
-                            ? [
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                DefaultTextField(
-                                  labelText: "Login",
-                                  autofillHints: const [AutofillHints.nickname],
-                                  validator: auth_validators.checkLogin,
-                                  prefixIcon: Icon(
-                                    Icons.person,
-                                    color:
-                                        Theme.of(context).colorScheme.secondary,
-                                  ),
-                                  onChanged: (v) {
-                                    _loginText = v;
-                                  },
-                                ),
-                              ]
-                            : [],
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    DefaultTextField(
-                      labelText: "Email",
-                      autofillHints: const [AutofillHints.email],
-                      prefixIcon: Icon(
-                        Icons.alternate_email,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                      validator: auth_validators.checkEmail,
-                      onChanged: (v) {
-                        _emailText = v;
-                      },
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    PasswordTextField(
-                      labelText: "Password",
-                      validator: auth_validators.checkPassword,
-                      autofillHints: const [AutofillHints.email],
-                      prefixIcon: Icon(
-                        Icons.password,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                      onChanged: (v) {
-                        _passwordText = v;
-                      },
-                    ),
-                    const SizedBox(
-                      height: 40,
-                    ),
-                    _buildRoundedButton(),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    TextButton(
-                      onPressed: _changeAuthMode,
-                      child: Text(
-                        !_isSignIn
-                            ? "Have you already an account?"
-                            : "Don't have an account?",
-                      ),
-                    )
-                  ],
-                ),
-              ),
+    return BlocListener<AuthenticationCubit, AuthenticationState>(
+      listener: (context, state) {
+        if (state is UnAuthenticatedState && state.message != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message.toString()),
             ),
           );
-        },
+        }
+      },
+      child: Scaffold(
+        body: BlocBuilder<AuthenticationCubit, AuthenticationState>(
+          builder: (context, state) {
+            return Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 40,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _isSignIn ? "Sign in" : "Sign up",
+                        style: const TextStyle(
+                          fontSize: 30.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 200),
+                        child: Column(
+                          children: !_isSignIn
+                              ? [
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  DefaultTextField(
+                                    labelText: "Login",
+                                    autofillHints: const [
+                                      AutofillHints.nickname
+                                    ],
+                                    validator: auth_validators.checkLogin,
+                                    prefixIcon: Icon(
+                                      Icons.person,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                    ),
+                                    onChanged: (v) {
+                                      _loginText = v;
+                                    },
+                                  ),
+                                ]
+                              : [],
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      DefaultTextField(
+                        labelText: "Email",
+                        autofillHints: const [AutofillHints.email],
+                        prefixIcon: Icon(
+                          Icons.alternate_email,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        validator: auth_validators.checkEmail,
+                        onChanged: (v) {
+                          _emailText = v;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      PasswordTextField(
+                        labelText: "Password",
+                        validator: auth_validators.checkPassword,
+                        autofillHints: const [AutofillHints.email],
+                        prefixIcon: Icon(
+                          Icons.password,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        onChanged: (v) {
+                          _passwordText = v;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 40,
+                      ),
+                      _buildRoundedButton(),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      TextButton(
+                        onPressed: _changeAuthMode,
+                        child: Text(
+                          !_isSignIn
+                              ? "Have you already an account?"
+                              : "Don't have an account?",
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

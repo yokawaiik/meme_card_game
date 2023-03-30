@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:meme_card_game/src/features/game/domain/models/player.dart';
-import 'package:meme_card_game/src/features/game/domain/models/situation.dart';
-import 'package:meme_card_game/src/features/game/presentation/cubit/game_cubit.dart';
 
 import '../../widgets/player_list_tile.dart';
 import '../cubit/space_cubit.dart';

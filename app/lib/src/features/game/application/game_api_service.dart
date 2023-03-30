@@ -1,12 +1,9 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:meme_card_game/src/features/game/domain/models/game_card.dart';
 import 'package:meme_card_game/src/features/game/domain/models/situation.dart';
 import 'package:meme_card_game/src/models/realtime_exception.dart';
 import 'package:meme_card_game/src/models/supabase_exception.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import 'package:collection/collection.dart';
 
 class GameApiService {
   static final _client = Supabase.instance.client;
